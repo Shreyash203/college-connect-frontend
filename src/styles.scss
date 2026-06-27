@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 32px 24px;
+  background: radial-gradient(circle at top left, rgba(56,189,248,0.14), transparent 28%), linear-gradient(135deg, #f8fbff 0%, #f4f7fb 100%);
+  transition: background 300ms ease, color 300ms ease;
+}
+
+.dark .app-shell {
+  background: radial-gradient(circle at top left, rgba(96,165,250,0.16), transparent 28%), linear-gradient(135deg, #0b1120 0%, #070a14 100%);
+}
+
+.app-card {
+  margin: 0 auto;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 28px;
+  border-radius: 36px;
+  border: 1px solid rgba(148,163,184,0.28);
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 24px 80px rgba(15,23,42,0.12);
+}
+
+.dark .app-card {
+  background: rgba(15,23,42,0.85);
+  border: 1px solid rgba(71,85,105,0.56);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.48);
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 28px;
+  background: rgba(15,23,42,0.9);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.site-title {
+  margin: 0;
+  display: block;
+  color: #93c5fd;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.site-heading {
+  margin: 8px 0 0;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.02;
+  color: #ffffff;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.nav-link,
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.9rem 1.2rem;
+  border: 1px solid rgba(255,255,255,0.16);
+  color: rgba(255,255,255,0.92);
+  background: rgba(255,255,255,0.08);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 180ms ease;
+}
+
+.nav-link:hover,
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.16);
+}
+
+.footer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(148,163,184,0.28);
+  background: rgba(255,255,255,0.92);
+}
+
+.dark .footer-bar {
+  background: rgba(15,23,42,0.86);
+  border-color: rgba(71,85,105,0.56);
+}
+
+.footer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 24px 16px;
+  }
+
+  .app-card {
+    padding: 24px;
+  }
+
+  .site-header,
+  .footer-bar {
+    padding: 20px;
+  }
+}
