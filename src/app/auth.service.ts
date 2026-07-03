@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api.config';
 
 export interface AuthResponse {
   access_token: string;
@@ -39,7 +40,7 @@ export interface ResetPasswordRequest {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8000/api';
+  private readonly apiUrl = API_BASE_URL;
 
   register(data: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, data);
