@@ -17,10 +17,12 @@ import { AuthService, RegisterRequest } from './auth.service';
       <ng-container *ngIf="step === 'register'">
         <form (ngSubmit)="register()" class="flex flex-col gap-4">
           <label class="text-sm font-medium text-slate-700">Email</label>
-          <input type="email" [(ngModel)]="email" name="email" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
+          <input type="email" [(ngModel)]="email" name="email" required [disabled]="isRegistering" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100" />
           <label class="text-sm font-medium text-slate-700">Password</label>
-          <input type="password" [(ngModel)]="password" name="password" required minlength="8" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
-          <button type="submit" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700">Register</button>
+          <input type="password" [(ngModel)]="password" name="password" required minlength="8" [disabled]="isRegistering" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100" />
+          <button type="submit" [disabled]="isRegistering" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400">
+            {{ isRegistering ? 'Sending OTP...' : 'Register' }}
+          </button>
         </form>
       </ng-container>
       <ng-container *ngIf="step === 'otp'">
@@ -48,24 +50,32 @@ export class AuthComponent {
   step: 'register' | 'otp' = 'register';
   message = '';
   messageType: 'success' | 'error' = 'success';
+  isRegistering = false;
 
   register() {
+    if (this.isRegistering) {
+      return;
+    }
+
     const request: RegisterRequest = {
       email: this.email,
       password: this.password,
     };
 
+    this.isRegistering = true;
     this.authService.register(request).subscribe({
       next: (res) => {
         this.pendingId = res.pending_id;
         this.step = 'otp';
         this.message = res.message;
         this.messageType = 'success';
+        this.isRegistering = false;
       },
       error: (err) => {
         const detail = err.error?.detail || err.error?.message || err.statusText || err.message;
         this.message = `Registration failed${detail ? ': ' + detail : '.'}`;
         this.messageType = 'error';
+        this.isRegistering = false;
       },
     });
   }
