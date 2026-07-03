@@ -56,4 +56,4 @@ jobs:
           az containerapp update \
             -n ca-college-connect-frontend \
             -g rg-college-connect-dev \
-            --image $IMAGE_NAME
+            --image $IMAGE_NAME 
