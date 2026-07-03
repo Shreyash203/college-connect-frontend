@@ -9,6 +9,7 @@ backend.db
 # Node
 node_modules/
 dist/
+.angular/
 .DS_Store
 
 # VS Code

@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api.config';
 
 export interface ProfileCreate {
   display_name?: string;
@@ -23,7 +24,7 @@ export interface ProfileRead {
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
   private http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8000/api';
+  private readonly apiUrl = API_BASE_URL;
 
   createProfile(profile: ProfileCreate): Observable<ProfileRead> {
     return this.http.post<ProfileRead>(`${this.apiUrl}/profiles`, profile);

@@ -14,14 +14,25 @@ import { AuthService, RegisterRequest } from './auth.service';
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">Join us</p>
         <h2 class="text-3xl font-semibold text-slate-900">Create your account</h2>
       </div>
-      <form (ngSubmit)="register()" class="flex flex-col gap-4">
-        <label class="text-sm font-medium text-slate-700">Email</label>
-        <input type="email" [(ngModel)]="email" name="email" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
-        <label class="text-sm font-medium text-slate-700">Password</label>
-        <input type="password" [(ngModel)]="password" name="password" required minlength="8" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
-        <button type="submit" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700">Register</button>
-      </form>
-      <div *ngIf="message" class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ message }}</div>
+      <ng-container *ngIf="step === 'register'">
+        <form (ngSubmit)="register()" class="flex flex-col gap-4">
+          <label class="text-sm font-medium text-slate-700">Email</label>
+          <input type="email" [(ngModel)]="email" name="email" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
+          <label class="text-sm font-medium text-slate-700">Password</label>
+          <input type="password" [(ngModel)]="password" name="password" required minlength="8" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
+          <button type="submit" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700">Register</button>
+        </form>
+      </ng-container>
+      <ng-container *ngIf="step === 'otp'">
+        <form (ngSubmit)="verifyOtp()" class="flex flex-col gap-4">
+          <p class="text-sm text-slate-600">We've sent a verification code to <strong>{{ email }}</strong>. Enter it below to complete your registration.</p>
+          <label class="text-sm font-medium text-slate-700">Verification Code</label>
+          <input type="text" [(ngModel)]="otp" name="otp" required maxlength="6" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
+          <button type="submit" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700">Verify</button>
+          <button type="button" (click)="resendOtp()" class="text-sm text-blue-600 hover:underline">Resend code</button>
+        </form>
+      </ng-container>
+      <div *ngIf="message" [ngClass]="messageType === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'" class="rounded-2xl px-4 py-3 text-sm">{{ message }}</div>
     </div>
   `,
   styles: []
@@ -32,7 +43,11 @@ export class AuthComponent {
 
   email = '';
   password = '';
+  otp = '';
+  pendingId: number | null = null;
+  step: 'register' | 'otp' = 'register';
   message = '';
+  messageType: 'success' | 'error' = 'success';
 
   register() {
     const request: RegisterRequest = {
@@ -41,13 +56,56 @@ export class AuthComponent {
     };
 
     this.authService.register(request).subscribe({
-      next: () => {
-        this.message = 'Registration successful. Proceed to login.';
-        this.router.navigate(['/login']);
+      next: (res) => {
+        this.pendingId = res.pending_id;
+        this.step = 'otp';
+        this.message = res.message;
+        this.messageType = 'success';
       },
       error: (err) => {
         const detail = err.error?.detail || err.error?.message || err.statusText || err.message;
         this.message = `Registration failed${detail ? ': ' + detail : '.'}`;
+        this.messageType = 'error';
+      },
+    });
+  }
+
+  verifyOtp() {
+    if (this.pendingId == null) {
+      this.message = 'No pending registration found.';
+      this.messageType = 'error';
+      return;
+    }
+    this.authService.verifyRegistration({ pending_id: this.pendingId, otp: this.otp }).subscribe({
+      next: (res) => {
+        localStorage.setItem('auth_token', res.access_token);
+        this.message = 'Registration successful!';
+        this.messageType = 'success';
+        this.router.navigate(['/profile']);
+      },
+      error: (err) => {
+        const detail = err.error?.detail || err.error?.message || err.statusText || err.message;
+        this.message = `Verification failed${detail ? ': ' + detail : '.'}`;
+        this.messageType = 'error';
+      },
+    });
+  }
+
+  resendOtp() {
+    if (this.pendingId == null) {
+      this.message = 'No pending registration found.';
+      this.messageType = 'error';
+      return;
+    }
+    this.authService.resendOtp({ pending_id: this.pendingId }).subscribe({
+      next: (res) => {
+        this.message = res.message;
+        this.messageType = 'success';
+      },
+      error: (err) => {
+        const detail = err.error?.detail || err.error?.message || err.statusText || err.message;
+        this.message = `Failed to resend code${detail ? ': ' + detail : '.'}`;
+        this.messageType = 'error';
       },
     });
   }
