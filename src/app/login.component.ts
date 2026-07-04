@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -32,7 +32,7 @@ import { CurrentUserService } from './current-user.service';
   `,
   styles: []
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private currentUser = inject(CurrentUserService);
@@ -41,6 +41,12 @@ export class LoginComponent {
   password = '';
   successMessage = '';
   errorMessage = '';
+
+  ngOnInit() {
+    if (localStorage.getItem('auth_token')) {
+      this.router.navigate(['/profile']);
+    }
+  }
 
   login() {
     this.successMessage = '';

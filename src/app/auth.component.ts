@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -40,12 +40,18 @@ import { CurrentUserService } from './current-user.service';
   `,
   styles: []
 })
-export class AuthComponent {
+export class AuthComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private currentUser = inject(CurrentUserService);
 
   email = '';
+
+  ngOnInit() {
+    if (localStorage.getItem('auth_token')) {
+      this.router.navigate(['/profile']);
+    }
+  }
   password = '';
   otp = '';
   pendingId: number | null = null;
