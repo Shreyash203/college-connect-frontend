@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, RegisterRequest } from './auth.service';
+import { CurrentUserService } from './current-user.service';
 
 @Component({
   selector: 'app-auth',
@@ -42,6 +43,7 @@ import { AuthService, RegisterRequest } from './auth.service';
 export class AuthComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private currentUser = inject(CurrentUserService);
 
   email = '';
   password = '';
@@ -89,6 +91,7 @@ export class AuthComponent {
     this.authService.verifyRegistration({ pending_id: this.pendingId, otp: this.otp }).subscribe({
       next: (res) => {
         localStorage.setItem('auth_token', res.access_token);
+        this.currentUser.setLoggedIn(true);
         this.message = 'Registration successful!';
         this.messageType = 'success';
         this.router.navigate(['/profile']);
