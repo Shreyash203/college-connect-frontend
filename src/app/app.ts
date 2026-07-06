@@ -19,8 +19,28 @@ export class App implements OnInit {
   protected darkMode = false;
 
   ngOnInit() {
+    this.checkTokenValidity();
     this.darkMode = localStorage.getItem('theme') === 'dark';
     this.applyTheme();
+  }
+
+  private checkTokenValidity() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      return;
+    }
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        // Token expired – clear and log out
+        localStorage.removeItem('auth_token');
+        this.currentUser.setLoggedIn(false);
+      }
+    } catch {
+      // If decoding fails, assume token is invalid
+      localStorage.removeItem('auth_token');
+      this.currentUser.setLoggedIn(false);
+    }
   }
 
   toggleTheme() {

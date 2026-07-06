@@ -1,15 +1,24 @@
 import { HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { inject } from '@angular/core';
+import { Observable, catchError, throwError } from 'rxjs';
+import { CurrentUserService } from './current-user.service';
 
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const token = localStorage.getItem('auth_token');
-  if (token) {
-    const authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return next(authReq);
-  }
-  return next(req);
+  const currentUser = inject(CurrentUserService);
+
+  const authReq = token
+    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+    : req;
+
+  return next(authReq).pipe(
+    catchError((err) => {
+      // If the backend says the token is invalid/expired, log out the user.
+      if (err.status === 401) {
+        localStorage.removeItem('auth_token');
+        currentUser.setLoggedIn(false);
+      }
+      return throwError(() => err);
+    })
+  );
 };
