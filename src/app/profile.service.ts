@@ -30,7 +30,15 @@ export class ProfileService {
     return this.http.post<ProfileRead>(`${this.apiUrl}/profiles`, profile);
   }
 
+  updateProfile(profile: ProfileCreate): Observable<ProfileRead> {
+    return this.http.put<ProfileRead>(`${this.apiUrl}/profiles/me`, profile);
+  }
+
   getProfiles(): Observable<ProfileRead[]> {
     return this.http.get<ProfileRead[]>(`${this.apiUrl}/profiles`);
+  }
+
+  getMyProfile(): Observable<ProfileRead> {
+    return this.http.get<ProfileRead>(`${this.apiUrl}/profiles/me`);
   }
 }

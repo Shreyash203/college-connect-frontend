@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProfileService, ProfileCreate } from './profile.service';
@@ -31,7 +31,9 @@ import { ProfileService, ProfileCreate } from './profile.service';
   `,
   styles: []
 })
-export class ProfileComponent {
+
+
+export class ProfileComponent implements OnInit {
   private profileService = inject(ProfileService);
 
   display_name = '';
@@ -40,6 +42,26 @@ export class ProfileComponent {
   bio = '';
   interests = '';
   message = '';
+  isEdit = false;
+
+  ngOnInit() {
+    // Try to load existing profile
+    this.profileService.getMyProfile().subscribe({
+      next: (profile) => {
+        this.isEdit = true;
+        this.display_name = profile.display_name || '';
+        this.department = profile.department || '';
+        this.year = profile.year || '';
+        this.bio = profile.bio || '';
+        this.interests = profile.interests?.join(', ') || '';
+        this.message = 'Loaded existing profile. You can edit and save.';
+      },
+      error: () => {
+        // No existing profile – stay in create mode
+        this.isEdit = false;
+      },
+    });
+  }
 
   saveProfile() {
     const profile: ProfileCreate = {
@@ -50,9 +72,13 @@ export class ProfileComponent {
       interests: this.interests.split(',').map((i) => i.trim()).filter(Boolean),
     };
 
-    this.profileService.createProfile(profile).subscribe({
+    const apiCall = this.isEdit
+      ? this.profileService.updateProfile(profile)
+      : this.profileService.createProfile(profile);
+
+    apiCall.subscribe({
       next: () => {
-        this.message = 'Profile created successfully.';
+        this.message = this.isEdit ? 'Profile updated successfully.' : 'Profile created successfully.';
       },
       error: (err) => {
         this.message = err.error?.detail || 'Failed to save profile.';
@@ -60,3 +86,4 @@ export class ProfileComponent {
     });
   }
 }
+
