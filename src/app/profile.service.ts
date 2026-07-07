@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api.config';
 
 export interface ProfileCreate {
+  image_url?: string;
   display_name?: string;
   department?: string;
   year?: string;
@@ -12,6 +13,7 @@ export interface ProfileCreate {
 }
 
 export interface ProfileRead {
+  image_url?: string;
   id: number;
   user_id: number;
   display_name?: string;
@@ -41,4 +43,12 @@ export class ProfileService {
   getMyProfile(): Observable<ProfileRead> {
     return this.http.get<ProfileRead>(`${this.apiUrl}/profiles/me`);
   }
+
+  uploadProfileImage(file: File): Observable<{url: string}> { 
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{url: string}>(`${this.apiUrl}/profiles/me/image`, formData);
+  }
 }
+  
+

@@ -9,9 +9,13 @@ import { ProfileService, ProfileCreate } from './profile.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="mx-auto flex max-w-2xl flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <div class="space-y-2">
+      <div class="space-y-2 text-center">
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">Profile</p>
         <h2 class="text-3xl font-semibold text-slate-900">Build Your Profile</h2>
+        <!-- Profile picture preview -->
+        <img *ngIf="imageUrl" [src]="imageUrl" class="mx-auto mb-4 w-32 h-32 rounded-full object-cover border" />
+        <label class="block text-sm font-medium text-slate-700 mb-1">Profile Photo</label>
+        <input type="file" (change)="onFileSelected($event)" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-emerald-600 file:text-white hover:file:bg-emerald-700" />
       </div>
       <form (ngSubmit)="saveProfile()" class="flex flex-col gap-4">
         <label class="text-sm font-medium text-slate-700">Display Name</label>
@@ -33,7 +37,8 @@ import { ProfileService, ProfileCreate } from './profile.service';
 })
 
 
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit { selectedFile: File | null = null;
+  imageUrl: string | null = null;
   private profileService = inject(ProfileService);
 
   display_name = '';
@@ -54,6 +59,7 @@ export class ProfileComponent implements OnInit {
         this.year = profile.year || '';
         this.bio = profile.bio || '';
         this.interests = profile.interests?.join(', ') || '';
+        this.imageUrl = profile.image_url || null;
         this.message = 'Loaded existing profile. You can edit and save.';
       },
       error: () => {
@@ -63,25 +69,49 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  onFileSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length) {
+      this.selectedFile = target.files[0];
+    }
+  }
+
   saveProfile() {
+    if (this.selectedFile) {
+      this.profileService.uploadProfileImage(this.selectedFile).subscribe({
+        next: (resp) => {
+          this.submitProfile(resp.url);
+        },
+        error: (err) => {
+          this.message = err.error?.detail || 'Failed to upload image.';
+        },
+      });
+      return;
+    }
+    this.submitProfile();
+  }
+
+  private submitProfile(imageUrl?: string) {
     const profile: ProfileCreate = {
       display_name: this.display_name,
       department: this.department,
       year: this.year,
       bio: this.bio,
       interests: this.interests.split(',').map((i) => i.trim()).filter(Boolean),
+      image_url: imageUrl,
     };
-
     const apiCall = this.isEdit
       ? this.profileService.updateProfile(profile)
       : this.profileService.createProfile(profile);
-
     apiCall.subscribe({
-      next: () => {
+      next: (resp) => {
         this.message = this.isEdit ? 'Profile updated successfully.' : 'Profile created successfully.';
+        if (resp && resp.image_url) {
+          this.imageUrl = resp.image_url;
+        }
       },
       error: (err) => {
-        this.message = err.error?.detail || 'Failed to save profile.';
+        this.message = err.error?.detail || 'Failed to save profile.'; 
       },
     });
   }
