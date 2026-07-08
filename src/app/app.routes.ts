@@ -19,8 +19,8 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'feed', component: FeedComponent, canActivate: [authGuard] },
-  // New feature routes
-  { path: 'marketplace', component: MarketplaceComponent },
-  { path: 'discover', component: DiscoverComponent },
-  { path: 'confessions', component: ConfessionsComponent },
+  // New feature routes - protected
+  { path: 'marketplace', component: MarketplaceComponent, canActivate: [authGuard] },
+  { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
+  { path: 'confessions', component: ConfessionsComponent, canActivate: [authGuard] },
 ];
