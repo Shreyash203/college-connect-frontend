@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { API_BASE_URL } from './api.config';
 
 export interface ProfileCreate {
@@ -45,9 +46,21 @@ export class ProfileService {
   }
 
   uploadProfileImage(file: File): Observable<{url: string}> { 
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<{url: string}>(`${this.apiUrl}/profiles/me/image`, formData);
+    return this.http.get<{ upload_url: string, image_url: string }>(
+      `${this.apiUrl}/profiles/me/upload-url`,
+      { params: { filename: file.name } }
+    ).pipe(
+      switchMap(urls => {
+        const headers = new HttpHeaders().set('x-ms-blob-type', 'BlockBlob');
+        return this.http.put(urls.upload_url, file, { headers, responseType: 'text' }).pipe(
+          switchMap(() => {
+            return this.http.post<{url: string}>(`${this.apiUrl}/profiles/me/image`, {
+              image_url: urls.image_url
+            });
+          })
+        );
+      })
+    );
   }
 }
   

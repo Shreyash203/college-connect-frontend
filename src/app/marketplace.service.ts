@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { API_BASE_URL } from './api.config';
 
 export interface MarketplaceItem {
@@ -16,11 +17,23 @@ export class MarketplaceService {
   private readonly apiUrl = API_BASE_URL;
 
   createItem(title: string, description: string, file: File): Observable<MarketplaceItem> {
-    const form = new FormData();
-    form.append('title', title);
-    form.append('description', description);
-    form.append('file', file);
-    return this.http.post<MarketplaceItem>(`${this.apiUrl}/marketplace/items`, form);
+    return this.http.get<{ upload_url: string, image_url: string }>(
+      `${this.apiUrl}/marketplace/items/upload-url`,
+      { params: { filename: file.name } }
+    ).pipe(
+      switchMap(urls => {
+        const headers = new HttpHeaders().set('x-ms-blob-type', 'BlockBlob');
+        return this.http.put(urls.upload_url, file, { headers, responseType: 'text' }).pipe(
+          switchMap(() => {
+            return this.http.post<MarketplaceItem>(`${this.apiUrl}/marketplace/items`, {
+              title,
+              description,
+              image_url: urls.image_url
+            });
+          })
+        );
+      })
+    );
   }
 
   getItems(): Observable<MarketplaceItem[]> {
