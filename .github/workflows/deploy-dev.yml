@@ -31,7 +31,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_NAME }}
+          tags: |
+            ${{ env.IMAGE_NAME }}
+            ghcr.io/shreyash203/college-connect-frontend:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,4 +58,4 @@ jobs:
           az containerapp update \
             -n ca-college-connect-frontend \
             -g rg-college-connect-dev \
-            --image $IMAGE_NAME 
+            --image ghcr.io/shreyash203/college-connect-frontend:${{ github.sha }}
