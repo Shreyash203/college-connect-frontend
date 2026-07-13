@@ -7,6 +7,11 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const token = localStorage.getItem('auth_token');
   const currentUser = inject(CurrentUserService);
 
+  // Skip attaching token for Azure Blob Storage requests
+  if (req.url.includes('blob.core.windows.net')) {
+    return next(req);
+  }
+
   const authReq = token
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
