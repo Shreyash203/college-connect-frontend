@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -22,7 +22,12 @@ import { CurrentUserService } from './current-user.service';
         <input type="email" [(ngModel)]="email" name="email" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none ring-0 transition focus:border-blue-500" />
         <label class="text-sm font-medium text-slate-700">Password</label>
         <input type="password" [(ngModel)]="password" name="password" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none ring-0 transition focus:border-blue-500" />
-        <button type="submit" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700">Login</button>
+        
+        <button type="submit" [disabled]="isLoading()" class="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed">
+          <span *ngIf="!isLoading()">Login</span>
+          <span *ngIf="isLoading()" class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+          <span *ngIf="isLoading()">Logging in...</span>
+        </button>
         <a routerLink="/forgot-password" class="text-sm text-blue-600 hover:underline">Forgot password?</a>
       </form>
 
@@ -41,6 +46,11 @@ export class LoginComponent implements OnInit {
   password = '';
   successMessage = '';
   errorMessage = '';
+  private isLoadingSignal = signal(false);
+
+  isLoading() {
+    return this.isLoadingSignal();
+  }
 
   ngOnInit() {
     if (localStorage.getItem('auth_token')) {
@@ -51,15 +61,18 @@ export class LoginComponent implements OnInit {
   login() {
     this.successMessage = '';
     this.errorMessage = '';
+    this.isLoadingSignal.set(true);
 
     this.authService.login(this.email, this.password).subscribe({
       next: (result) => {
         localStorage.setItem('auth_token', result.access_token);
         this.currentUser.setLoggedIn(true);
+        this.isLoadingSignal.set(false);
         this.router.navigate(['/profile']);
       },
       error: (err) => {
         this.errorMessage = err.error?.detail || 'Login failed.';
+        this.isLoadingSignal.set(false);
       },
     });
   }
