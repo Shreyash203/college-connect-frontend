@@ -1,8 +1,4 @@
-<div class="fixed inset-0 z-[-1] bg-cover bg-center bg-no-repeat" style="background-image: url('/assets/login-bg.jpg');">
-  <div class="absolute inset-0 bg-white/20 dark:bg-black/60 backdrop-blur-sm"></div>
-</div>
-
-<div class="mx-auto flex max-w-md flex-col gap-6 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-8 shadow-2xl mt-10">
+<div class="mx-auto flex max-w-md flex-col gap-6 rounded-3xl border border-slate-200/60 dark:border-slate-700/60 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-8 shadow-2xl mt-4">
       <div class="space-y-2">
         <p class="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">Welcome back</p>
         <h2 class="text-3xl font-semibold text-slate-900 dark:text-slate-100">Login</h2>
@@ -25,4 +21,4 @@
 
       <div *ngIf="successMessage" class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">{{ successMessage }}</div>
       <div *ngIf="errorMessage" class="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage }}</div>
-    </div>
+</div>
