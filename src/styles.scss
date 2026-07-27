@@ -16,32 +16,12 @@ body {
 
 .app-shell {
   min-height: 100vh;
-  padding: 32px 24px;
   background: radial-gradient(circle at top left, rgba(56,189,248,0.14), transparent 28%), linear-gradient(135deg, #f8fbff 0%, #f4f7fb 100%);
   transition: background 300ms ease, color 300ms ease;
 }
 
 .dark .app-shell {
   background: radial-gradient(circle at top left, rgba(96,165,250,0.16), transparent 28%), linear-gradient(135deg, #0b1120 0%, #070a14 100%);
-}
-
-.app-card {
-  margin: 0 auto;
-  max-width: 1200px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  padding: 28px;
-  border-radius: 36px;
-  border: 1px solid rgba(148,163,184,0.28);
-  background: rgba(255,255,255,0.92);
-  box-shadow: 0 24px 80px rgba(15,23,42,0.12);
-}
-
-.dark .app-card {
-  background: rgba(15,23,42,0.85);
-  border: 1px solid rgba(71,85,105,0.56);
-  box-shadow: 0 24px 80px rgba(0,0,0,0.48);
 }
 
 .site-header {
@@ -126,13 +106,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .app-shell {
-    padding: 24px 16px;
-  }
-
-  .app-card {
-    padding: 24px;
-  }
 
   .site-header,
   .footer-bar {

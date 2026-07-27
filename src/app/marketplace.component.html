@@ -1,0 +1,50 @@
+<div class="mx-auto max-w-4xl rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 shadow-sm">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-slate-800 dark:text-slate-100">Marketplace</h2>
+      </div>
+
+      <!-- Create new marketplace item -->
+      <form [formGroup]="marketForm" (ngSubmit)="uploadImage()" class="flex flex-col gap-4">
+        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Title</label>
+        <input type="text" formControlName="title" required class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none focus:border-blue-500" />
+        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+        <textarea formControlName="description" rows="3" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none focus:border-blue-500"></textarea>
+        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Image</label>
+        <input type="file" (change)="onFileSelected($event)" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
+                <button type="submit" [disabled]="marketForm.invalid || !selectedFile || isUploading" class="mt-2 w-full rounded-2xl bg-blue-600 text-white px-4 py-3 font-semibold hover:bg-blue-700 disabled:opacity-50 transition shadow-sm flex justify-center items-center">
+          <svg *ngIf="isUploading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ isUploading ? 'Creating...' : 'Create Listing' }}
+        </button>
+      </form>
+
+      <hr class="my-6" />
+
+      <!-- Skeleton Loader -->
+      <div *ngIf="isLoading && items.length === 0" class="space-y-6">
+        <div *ngFor="let _ of [1,2,3]" class="mb-6 border-b border-slate-200 dark:border-slate-700 pb-4 animate-pulse">
+          <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-1/3 mb-2"></div>
+          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2 mb-4"></div>
+          <div class="h-48 bg-slate-200 dark:bg-slate-800 rounded max-w-xs w-full"></div>
+        </div>
+      </div>
+
+      <!-- List existing marketplace items -->
+      <div *ngIf="!isLoading || items.length > 0">
+        <div *ngIf="items.length; else noItems">
+        <div *ngFor="let item of items" class="mb-6 border-b pb-4">
+          <h3 class="text-xl font-medium text-slate-800 dark:text-slate-200">{{ item.title }}</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400" *ngIf="item.description">{{ item.description }}</p>
+          <img *ngIf="item.image_url" [src]="item.image_url" class="mt-2 max-w-xs rounded shadow" />
+        </div>
+        <div *ngIf="items.length > 0 && items.length % limit === 0" class="flex justify-center mt-6">
+          <button (click)="loadMoreItems()" class="px-6 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Load More</button>
+        </div>
+      </div>
+      <ng-template #noItems>
+        <p class="text-gray-600 text-center">No marketplace items yet.</p>
+      </ng-template>
+      </div>
+    </div>

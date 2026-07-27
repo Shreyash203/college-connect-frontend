@@ -2,67 +2,12 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CurrentUserService } from './current-user.service';
-import { FeedComponent } from './feed.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FeedComponent],
-  template: `
-    <section class="mx-auto flex max-w-6xl flex-col gap-8 rounded-[32px] border border-slate-200/80 bg-white/90 p-8 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-10">
-      <!-- Hero area -->
-      <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-        <div class="space-y-5">
-          <p class="text-sm font-semibold uppercase tracking-[0.35em] text-blue-600">College Connect</p>
-          <h1 class="text-5xl font-semibold leading-tight text-slate-950 sm:text-6xl">Connect, trade, and share on campus.</h1>
-          <p class="max-w-2xl text-lg text-slate-600">Buy, sell, request items, meet new people, or post anonymous confessions— all in one place.</p>
-          <!-- Show Register / Login only when not logged in -->
-          <div class="flex flex-wrap gap-3" *ngIf="!(currentUser.user$ | async)">
-            <a routerLink="/register" class="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">Get started</a>
-            <a routerLink="/login" class="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">Login</a>
-          </div>
-        </div>
-        <div class="rounded-[28px] bg-slate-950 p-8 text-white shadow-[0_20px_50px_rgba(15,23,42,0.2)]">
-          <p class="text-sm uppercase tracking-[0.35em] text-sky-300">Campus-first</p>
-          <h2 class="mt-4 text-3xl font-semibold">Designed for campus life</h2>
-          <ul class="mt-6 space-y-4 text-sm text-slate-200">
-            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-400/20 text-sky-300">✓</span>Verified college members only</li>
-            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-400/20 text-sky-300">✓</span>Buy/Sell/Request marketplace</li>
-            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-400/20 text-sky-300">✓</span>Anonymous confessions</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Feature blocks -->
-      <div class="grid gap-6 rounded-[24px] border border-slate-200/80 bg-slate-50 p-6 text-slate-700 sm:grid-cols-3">
-        <!-- Buy/Sell/Request -->
-        <div class="space-y-3">
-          <h3 class="text-lg font-semibold text-slate-800">Buy / Sell / Request</h3>
-          <p class="text-sm">Post items you want to sell, buy, or request from fellow students.</p>
-          <a routerLink="/marketplace" class="text-blue-600 hover:underline">Go to Marketplace →</a>
-        </div>
-        <!-- Meet New People -->
-        <div class="space-y-3">
-          <h3 class="text-lg font-semibold text-slate-800">Meet New People</h3>
-          <p class="text-sm">Discover peers with similar interests, join clubs, or find study buddies.</p>
-          <a routerLink="/discover" class="text-blue-600 hover:underline">Explore Connections →</a>
-        </div>
-        <!-- Confession -->
-        <div class="space-y-3">
-          <h3 class="text-lg font-semibold text-slate-800">Confessions</h3>
-          <p class="text-sm">Share thoughts anonymously or read what others are saying.</p>
-          <a routerLink="/confessions" class="text-blue-600 hover:underline">View Confessions →</a>
-        </div>
-      </div>
-
-      <!-- Feed / Notifications area -->
-      <div class="mt-4 p-4 bg-white rounded-lg shadow">
-        <h3 class="text-xl font-semibold mb-2">Your Feed</h3>
-        <p class="text-sm text-slate-500">All notifications – new marketplace posts, connection requests, and confessions will appear here.</p>
-        <app-feed></app-feed>
-      </div>
-    </section>
-  `,
+  imports: [RouterLink, CommonModule],
+  templateUrl: './home.component.html',
   styles: []
 })
 export class HomeComponent {

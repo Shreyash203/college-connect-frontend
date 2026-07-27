@@ -37,8 +37,8 @@ export class ProfileService {
     return this.http.put<ProfileRead>(`${this.apiUrl}/profiles/me`, profile);
   }
 
-  getProfiles(): Observable<ProfileRead[]> {
-    return this.http.get<ProfileRead[]>(`${this.apiUrl}/profiles`);
+  getProfiles(skip: number = 0, limit: number = 5): Observable<ProfileRead[]> {
+    return this.http.get<ProfileRead[]>(`${this.apiUrl}/profiles?skip=${skip}&limit=${limit}`);
   }
 
   getMyProfile(): Observable<ProfileRead> {

@@ -9,32 +9,7 @@ import { CurrentUserService } from './current-user.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  template: `
-    <div class="mx-auto flex max-w-md flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <div class="space-y-2">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">Welcome back</p>
-        <h2 class="text-3xl font-semibold text-slate-900">Login</h2>
-        <p class="text-sm text-slate-600">Sign in with your verified college account.</p>
-      </div>
-
-      <form (ngSubmit)="login()" class="flex flex-col gap-4">
-        <label class="text-sm font-medium text-slate-700">Email</label>
-        <input type="email" [(ngModel)]="email" name="email" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none ring-0 transition focus:border-blue-500" />
-        <label class="text-sm font-medium text-slate-700">Password</label>
-        <input type="password" [(ngModel)]="password" name="password" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none ring-0 transition focus:border-blue-500" />
-        
-        <button type="submit" [disabled]="isLoading()" class="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed">
-          <span *ngIf="!isLoading()">Login</span>
-          <span *ngIf="isLoading()" class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-          <span *ngIf="isLoading()">Logging in...</span>
-        </button>
-        <a routerLink="/forgot-password" class="text-sm text-blue-600 hover:underline">Forgot password?</a>
-      </form>
-
-      <div *ngIf="successMessage" class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ successMessage }}</div>
-      <div *ngIf="errorMessage" class="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage }}</div>
-    </div>
-  `,
+  templateUrl: './login.component.html',
   styles: []
 })
 export class LoginComponent implements OnInit {

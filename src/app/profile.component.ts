@@ -1,69 +1,49 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ProfileService, ProfileCreate } from './profile.service';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <div class="mx-auto flex max-w-2xl flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <div class="space-y-2 text-center">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">Profile</p>
-        <h2 class="text-3xl font-semibold text-slate-900">Build Your Profile</h2>
-        <!-- Profile picture preview -->
-        <img *ngIf="imageUrl" [src]="imageUrl" class="mx-auto mb-4 w-32 h-32 rounded-full object-cover border" />
-        <label class="block text-sm font-medium text-slate-700 mb-1">Profile Photo</label>
-        <input type="file" (change)="onFileSelected($event)" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-emerald-600 file:text-white hover:file:bg-emerald-700" />
-      </div>
-      <form (ngSubmit)="saveProfile()" class="flex flex-col gap-4">
-        <label class="text-sm font-medium text-slate-700">Display Name</label>
-        <input type="text" [(ngModel)]="display_name" name="display_name" required class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500" />
-        <label class="text-sm font-medium text-slate-700">Department</label>
-        <input type="text" [(ngModel)]="department" name="department" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500" />
-        <label class="text-sm font-medium text-slate-700">Year</label>
-        <input type="text" [(ngModel)]="year" name="year" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500" />
-        <label class="text-sm font-medium text-slate-700">Bio</label>
-        <textarea [(ngModel)]="bio" name="bio" rows="4" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500"></textarea>
-        <label class="text-sm font-medium text-slate-700">Interests (comma separated)</label>
-        <input type="text" [(ngModel)]="interests" name="interests" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-emerald-500" />
-        <button type="submit" class="mt-2 rounded-2xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700">Save Profile</button>
-      </form>
-      <div *ngIf="message" class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ message }}</div>
-    </div>
-  `,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './profile.component.html',
   styles: []
 })
 
 
-export class ProfileComponent implements OnInit { selectedFile: File | null = null;
+export class ProfileComponent implements OnInit {
+  selectedFile: File | null = null;
   imageUrl: string | null = null;
   private profileService = inject(ProfileService);
 
-  display_name = '';
-  department = '';
-  year = '';
-  bio = '';
-  interests = '';
+  profileForm = new FormGroup({
+    display_name: new FormControl('', [Validators.required]),
+    department: new FormControl(''),
+    year: new FormControl(''),
+    bio: new FormControl(''),
+    interests: new FormControl('')
+  });
+
   message = '';
   isEdit = false;
+  isSaving = false;
 
   ngOnInit() {
-    // Try to load existing profile
     this.profileService.getMyProfile().subscribe({
       next: (profile) => {
         this.isEdit = true;
-        this.display_name = profile.display_name || '';
-        this.department = profile.department || '';
-        this.year = profile.year || '';
-        this.bio = profile.bio || '';
-        this.interests = profile.interests?.join(', ') || '';
+        this.profileForm.patchValue({
+          display_name: profile.display_name || '',
+          department: profile.department || '',
+          year: profile.year || '',
+          bio: profile.bio || '',
+          interests: profile.interests?.join(', ') || ''
+        });
         this.imageUrl = profile.image_url || null;
         this.message = 'Loaded existing profile. You can edit and save.';
       },
       error: () => {
-        // No existing profile – stay in create mode
         this.isEdit = false;
       },
     });
@@ -77,6 +57,9 @@ export class ProfileComponent implements OnInit { selectedFile: File | null = nu
   }
 
   saveProfile() {
+    if (this.profileForm.invalid) return;
+    this.isSaving = true;
+    
     if (this.selectedFile) {
       this.profileService.uploadProfileImage(this.selectedFile).subscribe({
         next: (resp) => {
@@ -84,6 +67,7 @@ export class ProfileComponent implements OnInit { selectedFile: File | null = nu
         },
         error: (err) => {
           this.message = err.error?.detail || 'Failed to upload image.';
+          this.isSaving = false;
         },
       });
       return;
@@ -92,12 +76,13 @@ export class ProfileComponent implements OnInit { selectedFile: File | null = nu
   }
 
   private submitProfile(imageUrl?: string) {
+    const vals = this.profileForm.value;
     const profile: ProfileCreate = {
-      display_name: this.display_name,
-      department: this.department,
-      year: this.year,
-      bio: this.bio,
-      interests: this.interests.split(',').map((i) => i.trim()).filter(Boolean),
+      display_name: vals.display_name!,
+      department: vals.department || '',
+      year: vals.year || '',
+      bio: vals.bio || '',
+      interests: (vals.interests || '').split(',').map((i: string) => i.trim()).filter(Boolean),
       image_url: imageUrl,
     };
     const apiCall = this.isEdit
@@ -109,11 +94,12 @@ export class ProfileComponent implements OnInit { selectedFile: File | null = nu
         if (resp && resp.image_url) {
           this.imageUrl = resp.image_url;
         }
+        this.isSaving = false;
       },
       error: (err) => {
         this.message = err.error?.detail || 'Failed to save profile.'; 
+        this.isSaving = false;
       },
     });
   }
 }
-

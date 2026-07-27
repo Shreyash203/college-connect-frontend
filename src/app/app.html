@@ -1,36 +1,43 @@
-<main class="app-shell" [class.dark]="darkMode">
-  <div class="app-card">
-    <header [ngClass]="darkMode ? 'flex flex-col gap-4 rounded-[24px] border border-slate-800 bg-slate-950 px-6 py-5 text-white shadow-lg sm:flex-row sm:items-center sm:justify-between sm:px-8' : 'flex flex-col gap-4 rounded-[24px] border border-slate-200/80 bg-slate-950 px-6 py-5 text-white shadow-lg sm:flex-row sm:items-center sm:justify-between sm:px-8'">
-      <div>
-        <p class="text-sm font-semibold uppercase tracking-[0.35em] text-blue-300">College Connect</p>
-        <h1 class="mt-1 text-2xl font-semibold">A premium campus community experience</h1>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
-        <a routerLink="/" class="rounded-full px-4 py-2 transition hover:bg-white/10">Home</a>
-        <ng-container *ngIf="!(isLoggedIn$ | async); else loggedInNav">
-          <a routerLink="/register" class="rounded-full px-4 py-2 transition hover:bg-white/10">Register</a>
-          <a routerLink="/login" class="rounded-full bg-white/10 px-4 py-2 transition hover:bg-white/20">Login</a>
-        </ng-container>
-        <ng-template #loggedInNav>
-          <a routerLink="/profile" class="rounded-full px-4 py-2 transition hover:bg-white/10">Profile</a>
-          <a routerLink="/feed" class="rounded-full px-4 py-2 transition hover:bg-white/10">Feed</a>
-          <button type="button" (click)="logout()" class="rounded-full border border-white/20 px-4 py-2 transition hover:bg-white/10">Logout</button>
-        </ng-template>
-        <button type="button" (click)="toggleTheme()" class="rounded-full border border-white/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] transition hover:bg-white/10">
-          {{ darkMode ? '☀ Light' : '☾ Dark' }}
-        </button>
-      </div>
-    </header>
+<main class="app-shell flex flex-col min-h-screen" [class.dark]="darkMode">
+  <!-- Sticky, full-width glassmorphism header -->
+  <header [ngClass]="darkMode ? 'sticky top-0 z-50 flex flex-col gap-4 border-b border-slate-800 bg-slate-950/70 backdrop-blur-md px-6 py-4 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-12' : 'sticky top-0 z-50 flex flex-col gap-4 border-b border-slate-200/80 bg-white/70 backdrop-blur-md px-6 py-4 text-slate-900 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-12'">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.35em] text-blue-600 dark:text-blue-400">College Connect</p>
+      <h1 class="mt-1 text-lg font-semibold">A premium campus community experience</h1>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
+      <ng-container *ngIf="!(isLoggedIn$ | async); else loggedInNav">
+        <a routerLink="/" class="rounded-full px-4 py-2 transition hover:bg-slate-200/50 dark:hover:bg-white/10">Home</a>
+        <a routerLink="/register" class="rounded-full px-4 py-2 transition hover:bg-slate-200/50 dark:hover:bg-white/10">Register</a>
+        <a routerLink="/login" class="rounded-full bg-blue-600 text-white px-5 py-2 transition hover:bg-blue-700 shadow-md">Login</a>
+      </ng-container>
+      <ng-template #loggedInNav>
+        <a routerLink="/feed" class="rounded-full px-4 py-2 transition hover:bg-slate-200/50 dark:hover:bg-white/10">Feed</a>
+        <a routerLink="/discover" class="rounded-full px-4 py-2 transition hover:bg-slate-200/50 dark:hover:bg-white/10">Discover</a>
+        <a routerLink="/marketplace" class="rounded-full px-4 py-2 transition hover:bg-slate-200/50 dark:hover:bg-white/10">Marketplace</a>
+        <a routerLink="/profile" class="rounded-full px-4 py-2 transition hover:bg-slate-200/50 dark:hover:bg-white/10">Profile</a>
+        <button type="button" (click)="logout()" class="rounded-full border border-slate-300 dark:border-white/20 px-4 py-2 transition hover:bg-slate-200/50 dark:hover:bg-white/10">Logout</button>
+      </ng-template>
+      <button type="button" (click)="toggleTheme()" class="rounded-full border border-slate-300 dark:border-white/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] transition hover:bg-slate-200/50 dark:hover:bg-white/10">
+        {{ darkMode ? '☀ Light' : '☾ Dark' }}
+      </button>
+    </div>
+  </header>
 
+  <!-- Main content wrapper -->
+  <div class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
     <router-outlet></router-outlet>
+  </div>
 
-    <footer [ngClass]="darkMode ? 'flex flex-col gap-3 rounded-[24px] border border-slate-800 bg-slate-950/80 px-6 py-5 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between' : 'flex flex-col gap-3 rounded-[24px] border border-slate-200/80 bg-slate-50/80 px-6 py-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between'">
+  <!-- Full width footer -->
+  <footer [ngClass]="darkMode ? 'border-t border-slate-800 bg-slate-950/80 px-6 py-6 text-sm text-slate-400' : 'border-t border-slate-200/80 bg-slate-50/80 px-6 py-6 text-sm text-slate-500'">
+    <div class="w-full max-w-7xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p>Crafted for students who want a refined and secure social experience.</p>
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-wrap gap-4 font-medium">
         <span>Privacy-first</span>
         <span>Campus-ready</span>
         <span>Built with modern tech</span>
       </div>
-    </footer>
-  </div>
+    </div>
+  </footer>
 </main>
