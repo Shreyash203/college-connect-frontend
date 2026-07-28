@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Location } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { 
   IntercollegeService, 
@@ -24,7 +23,7 @@ export class FeedComponent implements OnInit {
   // State
   notifications: NotificationRead[] = [];
   confessions: ConfessionRead[] = [];
-  studentApps: StudentAppRead[] = [];
+  studentApps: any[] = [];
   
   confessionMessage = '';
   confessionMessageType: 'success' | 'error' = 'success';
@@ -218,7 +217,7 @@ export class FeedComponent implements OnInit {
     });
   }
 
-  deleteApp(app: StudentAppRead) {
+  deleteApp(app: any) {
     if (!confirm('Are you sure you want to delete this project?')) return;
     this.intercollegeService.deleteApp(app.id).subscribe({
       next: () => {

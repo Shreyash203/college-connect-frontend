@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { ProfileService } from './profile.service';
 import { MarketplaceService, MarketplaceItem } from './marketplace.service';
 
 @Component({
@@ -12,10 +11,8 @@ import { MarketplaceService, MarketplaceItem } from './marketplace.service';
   styles: []
 })
 export class MarketplaceComponent {
-  private profileService = inject(ProfileService);
   private marketplaceService = inject(MarketplaceService);
   selectedFile: File | null = null;
-  marketImageUrl: string | null = null;
   items: MarketplaceItem[] = [];
   skip = 0;
   limit = 20;
@@ -94,7 +91,6 @@ export class MarketplaceComponent {
         this.items.unshift(item);
         this.marketForm.reset({ item_type: 'selling' });
         this.selectedFile = null;
-        this.marketImageUrl = null;
         this.isUploading = false;
         this.successMessage = 'Listing created successfully!';
         setTimeout(() => this.successMessage = '', 4000);

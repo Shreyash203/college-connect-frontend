@@ -23,7 +23,8 @@ export interface StudentAppRead {
   college_domain: string;
   created_at: string;
   user_id: number;
-  is_mine?: boolean;
+  is_mine: boolean;
+  [key: string]: any;
 }
 
 export interface StudentAppCreate {
