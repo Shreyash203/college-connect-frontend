@@ -53,6 +53,12 @@ export class ProfileComponent implements OnInit {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files.length) {
       this.selectedFile = target.files[0];
+      // Show a local preview instantly
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imageUrl = e.target.result;
+      };
+      reader.readAsDataURL(this.selectedFile);
     }
   }
 
