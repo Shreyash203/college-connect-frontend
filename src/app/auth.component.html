@@ -18,6 +18,16 @@
             {{ isRegistering ? 'Sending OTP...' : 'Register' }}
           </button>
         </form>
+
+        <div class="relative flex items-center justify-center my-1">
+          <div class="grow border-t border-slate-200 dark:border-slate-700"></div>
+          <span class="shrink mx-4 text-xs font-bold text-slate-400 uppercase tracking-widest">or</span>
+          <div class="grow border-t border-slate-200 dark:border-slate-700"></div>
+        </div>
+
+        <div class="flex justify-center w-full min-h-[44px]">
+          <div id="googleRegisterBtn"></div>
+        </div>
       </ng-container>
       <ng-container *ngIf="step === 'otp'">
         <form (ngSubmit)="verifyOtp()" class="flex flex-col gap-4">

@@ -28,6 +28,16 @@
         <a routerLink="/forgot-password" class="text-sm text-blue-600 hover:underline">Forgot password?</a>
       </form>
 
+      <div class="relative flex items-center justify-center my-1">
+        <div class="grow border-t border-slate-200 dark:border-slate-700"></div>
+        <span class="shrink mx-4 text-xs font-bold text-slate-400 uppercase tracking-widest">or</span>
+        <div class="grow border-t border-slate-200 dark:border-slate-700"></div>
+      </div>
+
+      <div class="flex justify-center w-full min-h-[44px]">
+        <div id="googleLoginBtn"></div>
+      </div>
+
       <div *ngIf="successMessage" class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">{{ successMessage }}</div>
       <div *ngIf="errorMessage" class="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMessage }}</div>
 </div>
