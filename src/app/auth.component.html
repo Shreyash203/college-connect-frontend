@@ -8,7 +8,12 @@
           <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
           <input type="email" [(ngModel)]="email" name="email" required [disabled]="isRegistering" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 dark:disabled:bg-slate-700" />
           <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
-          <input type="password" [(ngModel)]="password" name="password" required minlength="8" [disabled]="isRegistering" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 dark:disabled:bg-slate-700" />
+          <div class="relative w-full">
+            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" required minlength="8" [disabled]="isRegistering" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 pr-12 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 dark:disabled:bg-slate-700" />
+            <button type="button" (click)="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-medium transition-colors">
+              {{ showPassword ? 'Hide 👁️' : 'Show 👁️' }}
+            </button>
+          </div>
           <button type="submit" [disabled]="isRegistering" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400">
             {{ isRegistering ? 'Sending OTP...' : 'Register' }}
           </button>

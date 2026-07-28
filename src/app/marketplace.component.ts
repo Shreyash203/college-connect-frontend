@@ -21,14 +21,33 @@ export class MarketplaceComponent {
   limit = 20;
   isLoading = true;
   isUploading = false;
+  errorMessage = '';
+  successMessage = '';
 
   marketForm = new FormGroup({
     title: new FormControl('', [Validators.required]),
-    description: new FormControl('', [])
+    description: new FormControl('', []),
+    item_type: new FormControl<'selling' | 'wanted'>('selling', [Validators.required])
   });
 
   ngOnInit() {
     this.loadItems();
+  }
+
+  extractErrorMessage(err: any, fallback: string): string {
+    if (!err) return fallback;
+    const detail = err.error?.detail;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) {
+      return detail.map((d: any) => {
+        if (typeof d === 'string') return d;
+        const field = d.loc && d.loc.length > 0 ? d.loc[d.loc.length - 1] : '';
+        return field ? `${field}: ${d.msg}` : d.msg;
+      }).join(' | ');
+    }
+    if (err.error?.message) return err.error.message;
+    if (err.message) return err.message;
+    return fallback;
   }
 
   private loadItems(append = false) {
@@ -63,21 +82,39 @@ export class MarketplaceComponent {
     }
     
     this.isUploading = true;
-    const title = this.marketForm.value.title!;
+    this.errorMessage = '';
+    this.successMessage = '';
+    const rawTitle = this.marketForm.value.title!;
+    const itemType = this.marketForm.value.item_type || 'selling';
+    const title = itemType === 'wanted' ? `[WANTED] ${rawTitle}` : rawTitle;
     const desc = this.marketForm.value.description || '';
     
     this.marketplaceService.createItem(title, desc, this.selectedFile).subscribe({
       next: (item) => {
         this.items.unshift(item);
-        this.marketForm.reset();
+        this.marketForm.reset({ item_type: 'selling' });
         this.selectedFile = null;
         this.marketImageUrl = null;
         this.isUploading = false;
+        this.successMessage = 'Listing created successfully!';
+        setTimeout(() => this.successMessage = '', 4000);
       },
       error: (err) => {
-        console.error('Marketplace upload failed', err);
+        this.errorMessage = this.extractErrorMessage(err, 'Failed to create listing.');
         this.isUploading = false;
       },
+    });
+  }
+
+  deleteItem(item: MarketplaceItem) {
+    if (!confirm('Are you sure you want to delete this listing from Campus Bazaar?')) return;
+    this.marketplaceService.deleteItem(item.id).subscribe({
+      next: () => {
+        this.items = this.items.filter(i => i.id !== item.id);
+      },
+      error: (err) => {
+        this.errorMessage = this.extractErrorMessage(err, 'Failed to delete listing.');
+      }
     });
   }
 }

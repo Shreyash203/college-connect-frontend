@@ -25,6 +25,7 @@ export class AuthComponent implements OnInit {
     }
   }
   password = '';
+  showPassword = false;
   otp = '';
   pendingId: number | null = null;
   step: 'register' | 'otp' = 'register';

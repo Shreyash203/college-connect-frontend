@@ -4,21 +4,10 @@
         <h2 class="text-3xl font-bold text-slate-800 dark:text-slate-200">Your Feed</h2>
       </div>
 
-      <div *ngIf="message" class="mb-6 rounded-2xl bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 transition-all">
-        {{ message }}
-      </div>
+
 
       <!-- Toggles -->
       <div class="flex space-x-4 mb-8 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto">
-        <button 
-          (click)="activeTab = 'notifications'"
-          [class.text-blue-600]="activeTab === 'notifications'"
-          [class.border-blue-600]="activeTab === 'notifications'"
-          [class.border-b-2]="activeTab === 'notifications'"
-          class="pb-2 px-2 text-lg font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 transition-colors whitespace-nowrap">
-          🔔 Notifications
-          <span *ngIf="unreadCount > 0" class="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadCount }}</span>
-        </button>
         <button 
           (click)="activeTab = 'confessions'"
           [class.text-blue-600]="activeTab === 'confessions'"
@@ -34,6 +23,15 @@
           [class.border-b-2]="activeTab === 'launchpad'"
           class="pb-2 px-2 text-lg font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 transition-colors whitespace-nowrap">
           🚀 Student Launchpad
+        </button>
+        <button 
+          (click)="activeTab = 'notifications'"
+          [class.text-blue-600]="activeTab === 'notifications'"
+          [class.border-blue-600]="activeTab === 'notifications'"
+          [class.border-b-2]="activeTab === 'notifications'"
+          class="pb-2 px-2 text-lg font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 transition-colors whitespace-nowrap">
+          🔔 Notifications
+          <span *ngIf="unreadCount > 0" class="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadCount }}</span>
         </button>
       </div>
 
@@ -72,22 +70,27 @@
             <button (click)="loadMoreNotifications()" class="px-6 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Load More</button>
           </div>
         </div>
-        </div>
       </div>
 
       <!-- Confessions Tab -->
       <div *ngIf="activeTab === 'confessions'">
         
         <!-- Post Confession Form -->
-                <form [formGroup]="confessionForm" (ngSubmit)="postConfession()" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
+        <form [formGroup]="confessionForm" (ngSubmit)="postConfession()" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
+          <div *ngIf="confessionMessage" [ngClass]="confessionMessageType === 'error' ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 border-red-200 dark:border-red-800' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'" class="mb-4 rounded-xl px-4 py-3 text-sm border">
+            {{ confessionMessage }}
+          </div>
+
           <textarea 
             formControlName="content"
             placeholder="Spill the tea... (It's completely anonymous!)" 
-            class="w-full p-4 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border-none focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-4"
+            class="w-full p-4 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-2"
             rows="3"></textarea>
-          <div class="flex justify-between items-center">
+          <p *ngIf="confessionForm.controls.content.touched && confessionForm.controls.content.errors?.['required']" class="text-xs text-red-500 mb-3">Confession content is required.</p>
+
+          <div class="flex justify-between items-center mt-2">
             <span class="text-sm text-slate-500 dark:text-slate-400">Your college badge will be attached.</span>
-                        <button 
+            <button 
               type="submit"
               [disabled]="confessionForm.invalid || isPostingConfession"
               class="bg-blue-600 text-white px-6 py-2 rounded-full font-medium shadow-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center">
@@ -120,7 +123,12 @@
               <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
                 🛡️ {{ c.college_domain }}
               </span>
-              <span class="text-xs text-slate-400">{{ c.created_at | date:'mediumDate' }}</span>
+              <div class="flex items-center space-x-3">
+                <span class="text-xs text-slate-400">{{ c.created_at | date:'mediumDate' }}</span>
+                <button *ngIf="c.is_mine" (click)="deleteConfession(c)" title="Delete Confession" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">
+                  🗑️ Delete
+                </button>
+              </div>
             </div>
             <p class="text-slate-800 dark:text-slate-200 text-lg whitespace-pre-wrap">{{ c.content }}</p>
           </div>
@@ -138,23 +146,37 @@
       <div *ngIf="activeTab === 'launchpad'">
         
         <!-- Post App Form -->
-                <form [formGroup]="appForm" (ngSubmit)="postApp()" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
+        <form [formGroup]="appForm" (ngSubmit)="postApp()" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
           <h3 class="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">Launch your Startup/App to students nationwide!</h3>
+          
+          <div *ngIf="appMessage" [ngClass]="appMessageType === 'error' ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 border-red-200 dark:border-red-800' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'" class="mb-4 rounded-xl px-4 py-3 text-sm border">
+            {{ appMessage }}
+          </div>
+
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">App or Startup Name *</label>
           <input 
             formControlName="app_name"
-            placeholder="App or Startup Name" 
-            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none mb-3" />
+            placeholder="e.g. StudyBuddy, CampusMart" 
+            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none mb-1" />
+          <p *ngIf="appForm.controls.app_name.touched && appForm.controls.app_name.errors?.['required']" class="text-xs text-red-500 mb-3">App name is required.</p>
+          
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-2 mb-1">Description *</label>
           <textarea 
             formControlName="description"
             placeholder="What does it do? Why should students use it?" 
-            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-3"
+            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-1"
             rows="2"></textarea>
+          <p *ngIf="appForm.controls.description.touched && appForm.controls.description.errors?.['required']" class="text-xs text-red-500 mb-3">Description is required.</p>
+
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-2 mb-1">Project Link (Optional)</label>
           <input 
             formControlName="app_url"
-            placeholder="Link (e.g. https://my-app.com)" 
-            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none mb-4" />
-          <div class="flex justify-end">
-                        <button 
+            placeholder="e.g. https://my-app.com" 
+            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none mb-1" />
+          <p *ngIf="appForm.controls.app_url.touched && appForm.controls.app_url.errors?.['pattern']" class="text-xs text-red-500 mb-3">Please enter a valid website link (e.g. my-app.com or https://my-app.com)</p>
+
+          <div class="flex justify-end mt-4">
+            <button 
               type="submit"
               [disabled]="appForm.invalid || isPostingApp"
               class="bg-green-600 text-white px-6 py-2 rounded-full font-medium shadow-md hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center">
@@ -194,11 +216,14 @@
             <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{{ app.app_name }}</h3>
             <p class="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">{{ app.description }}</p>
             
-            <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
+            <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
                <a *ngIf="app.app_url" [href]="app.app_url" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition-colors">
                  Visit Project <span class="ml-1">→</span>
                </a>
                <span *ngIf="!app.app_url" class="text-sm text-slate-400 italic">No link provided</span>
+               <button *ngIf="app.is_mine" (click)="deleteApp(app)" title="Delete Project" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors ml-auto">
+                 🗑️ Delete
+               </button>
             </div>
           </div>
         </div>

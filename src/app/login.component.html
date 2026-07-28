@@ -5,11 +5,20 @@
         <p class="text-sm text-slate-600 dark:text-slate-400">Sign in with your verified college account.</p>
       </div>
 
+      <div *ngIf="infoMessage" class="rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+        {{ infoMessage }}
+      </div>
+
       <form (ngSubmit)="login()" class="flex flex-col gap-4">
         <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
         <input type="email" [(ngModel)]="email" name="email" required class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none ring-0 transition focus:border-blue-500" />
         <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
-        <input type="password" [(ngModel)]="password" name="password" required class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none ring-0 transition focus:border-blue-500" />
+        <div class="relative w-full">
+          <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" required class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 pr-12 outline-none ring-0 transition focus:border-blue-500" />
+          <button type="button" (click)="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-medium transition-colors">
+            {{ showPassword ? 'Hide 👁️' : 'Show 👁️' }}
+          </button>
+        </div>
         
         <button type="submit" [disabled]="isLoading()" class="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed">
           <span *ngIf="!isLoading()">Login</span>

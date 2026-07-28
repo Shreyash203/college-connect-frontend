@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from './auth.service';
 import { CurrentUserService } from './current-user.service';
 
@@ -15,12 +15,16 @@ import { CurrentUserService } from './current-user.service';
 export class LoginComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private currentUser = inject(CurrentUserService);
 
   email = '';
   password = '';
+  showPassword = false;
   successMessage = '';
   errorMessage = '';
+  infoMessage = '';
+  returnUrl = '';
   private isLoadingSignal = signal(false);
 
   isLoading() {
@@ -28,8 +32,23 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['returnUrl']) {
+        this.returnUrl = params['returnUrl'];
+        if (this.returnUrl.includes('/marketplace')) {
+          this.infoMessage = '🔒 Campus Privacy: Log in with your college email to access the Campus Bazaar.';
+        } else if (this.returnUrl.includes('/discover')) {
+          this.infoMessage = '🔒 Student Privacy Protected: Log in to view student profiles and connect.';
+        } else if (this.returnUrl.includes('/feed')) {
+          this.infoMessage = '🔒 Log in with your college email to access Confessions and Launchpad.';
+        } else {
+          this.infoMessage = '🔒 Please log in to access this page.';
+        }
+      }
+    });
+
     if (localStorage.getItem('auth_token')) {
-      this.router.navigate(['/profile']);
+      this.router.navigateByUrl(this.returnUrl || '/profile');
     }
   }
 
@@ -43,7 +62,7 @@ export class LoginComponent implements OnInit {
         localStorage.setItem('auth_token', result.access_token);
         this.currentUser.setLoggedIn(true);
         this.isLoadingSignal.set(false);
-        this.router.navigate(['/profile']);
+        this.router.navigateByUrl(this.returnUrl || '/profile');
       },
       error: (err) => {
         this.errorMessage = err.error?.detail || 'Login failed.';
