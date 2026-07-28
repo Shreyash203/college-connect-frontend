@@ -35,7 +35,9 @@ export class AuthComponent implements OnInit, AfterViewInit {
     if (typeof google !== 'undefined' && google.accounts?.id) {
       google.accounts.id.initialize({
         client_id: '774747436427-57ign6kn9qt9tat4ipq7cnb04hio3rmn.apps.googleusercontent.com',
-        callback: (response: any) => this.handleGoogleCredentialResponse(response)
+        callback: (response: any) => this.handleGoogleCredentialResponse(response),
+        ux_mode: 'popup',
+        auto_select: false
       });
       const el = document.getElementById('googleRegisterBtn');
       if (el) {
