@@ -57,15 +57,18 @@ export class AuthComponent implements OnInit, AfterViewInit {
   handleGoogleCredentialResponse(response: any) {
     if (!response || !response.credential) return;
     this.message = '';
+    this.isProcessing = true;
     this.authService.loginWithGoogle(response.credential).subscribe({
       next: (res) => {
         localStorage.setItem('auth_token', res.access_token);
         this.currentUser.setLoggedIn(true);
+        this.isProcessing = false;
         this.router.navigate(['/profile']);
       },
       error: (err) => {
         this.message = this.extractErrorMessage(err, 'Google registration failed.');
         this.messageType = 'error';
+        this.isProcessing = false;
       }
     });
   }
@@ -77,7 +80,7 @@ export class AuthComponent implements OnInit, AfterViewInit {
   step: 'register' | 'otp' = 'register';
   message = '';
   messageType: 'success' | 'error' = 'success';
-  isRegistering = false;
+  isProcessing = false;
 
   extractErrorMessage(err: any, fallback: string): string {
     if (!err) return fallback;
@@ -96,7 +99,7 @@ export class AuthComponent implements OnInit, AfterViewInit {
   }
 
   register() {
-    if (this.isRegistering) {
+    if (this.isProcessing) {
       return;
     }
 
@@ -105,19 +108,19 @@ export class AuthComponent implements OnInit, AfterViewInit {
       password: this.password,
     };
 
-    this.isRegistering = true;
+    this.isProcessing = true;
     this.authService.register(request).subscribe({
       next: (res) => {
         this.pendingId = res.pending_id;
         this.step = 'otp';
         this.message = res.message;
         this.messageType = 'success';
-        this.isRegistering = false;
+        this.isProcessing = false;
       },
       error: (err) => {
         this.message = this.extractErrorMessage(err, 'Registration failed.');
         this.messageType = 'error';
-        this.isRegistering = false;
+        this.isProcessing = false;
       },
     });
   }
@@ -128,17 +131,20 @@ export class AuthComponent implements OnInit, AfterViewInit {
       this.messageType = 'error';
       return;
     }
+    this.isProcessing = true;
     this.authService.verifyRegistration({ pending_id: this.pendingId, otp: this.otp }).subscribe({
       next: (res) => {
         localStorage.setItem('auth_token', res.access_token);
         this.currentUser.setLoggedIn(true);
         this.message = 'Registration successful!';
         this.messageType = 'success';
+        this.isProcessing = false;
         this.router.navigate(['/profile']);
       },
       error: (err) => {
         this.message = this.extractErrorMessage(err, 'Verification failed.');
         this.messageType = 'error';
+        this.isProcessing = false;
       },
     });
   }
