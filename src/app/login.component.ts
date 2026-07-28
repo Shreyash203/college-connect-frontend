@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, AfterViewInit, signal } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, signal, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private currentUser = inject(CurrentUserService);
+  private ngZone = inject(NgZone);
 
   email = '';
   password = '';
@@ -82,20 +83,22 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   handleGoogleCredentialResponse(response: any) {
-    if (!response || !response.credential) return;
-    this.isLoadingSignal.set(true);
-    this.errorMessage = '';
-    this.authService.loginWithGoogle(response.credential).subscribe({
-      next: (res) => {
-        localStorage.setItem('auth_token', res.access_token);
-        this.currentUser.setLoggedIn(true);
-        this.isLoadingSignal.set(false);
-        this.router.navigateByUrl(this.returnUrl || '/profile');
-      },
-      error: (err) => {
-        this.errorMessage = this.extractErrorMessage(err, 'Google login failed.');
-        this.isLoadingSignal.set(false);
-      }
+    this.ngZone.run(() => {
+      if (!response || !response.credential) return;
+      this.isLoadingSignal.set(true);
+      this.errorMessage = '';
+      this.authService.loginWithGoogle(response.credential).subscribe({
+        next: (res) => {
+          localStorage.setItem('auth_token', res.access_token);
+          this.currentUser.setLoggedIn(true);
+          this.isLoadingSignal.set(false);
+          this.router.navigateByUrl(this.returnUrl || '/profile');
+        },
+        error: (err) => {
+          this.errorMessage = this.extractErrorMessage(err, 'Google login failed.');
+          this.isLoadingSignal.set(false);
+        }
+      });
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, AfterViewInit } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,6 +18,7 @@ export class AuthComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private currentUser = inject(CurrentUserService);
+  private ngZone = inject(NgZone);
 
   email = '';
 
@@ -55,21 +56,23 @@ export class AuthComponent implements OnInit, AfterViewInit {
   }
 
   handleGoogleCredentialResponse(response: any) {
-    if (!response || !response.credential) return;
-    this.message = '';
-    this.isProcessing = true;
-    this.authService.loginWithGoogle(response.credential).subscribe({
-      next: (res) => {
-        localStorage.setItem('auth_token', res.access_token);
-        this.currentUser.setLoggedIn(true);
-        this.isProcessing = false;
-        this.router.navigate(['/profile']);
-      },
-      error: (err) => {
-        this.message = this.extractErrorMessage(err, 'Google registration failed.');
-        this.messageType = 'error';
-        this.isProcessing = false;
-      }
+    this.ngZone.run(() => {
+      if (!response || !response.credential) return;
+      this.message = '';
+      this.isProcessing = true;
+      this.authService.loginWithGoogle(response.credential).subscribe({
+        next: (res) => {
+          localStorage.setItem('auth_token', res.access_token);
+          this.currentUser.setLoggedIn(true);
+          this.isProcessing = false;
+          this.router.navigate(['/profile']);
+        },
+        error: (err) => {
+          this.message = this.extractErrorMessage(err, 'Google registration failed.');
+          this.messageType = 'error';
+          this.isProcessing = false;
+        }
+      });
     });
   }
 
