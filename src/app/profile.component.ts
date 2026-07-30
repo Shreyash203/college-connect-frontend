@@ -1,7 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ProfileService, ProfileCreate } from './profile.service';
+import { AuthService } from './auth.service';
+import { CurrentUserService } from './current-user.service';
 
 @Component({
   selector: 'app-profile',
@@ -16,6 +19,9 @@ export class ProfileComponent implements OnInit {
   selectedFile: File | null = null;
   imageUrl: string | null = null;
   private profileService = inject(ProfileService);
+  private authService = inject(AuthService);
+  private currentUser = inject(CurrentUserService);
+  private router = inject(Router);
 
   profileForm = new FormGroup({
     display_name: new FormControl('', [Validators.required]),
@@ -107,5 +113,11 @@ export class ProfileComponent implements OnInit {
         this.isSaving = false;
       },
     });
+  }
+
+  logout() {
+    this.authService.logout();
+    this.currentUser.setLoggedIn(false);
+    this.router.navigate(['/']);
   }
 }

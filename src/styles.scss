@@ -16,12 +16,12 @@ body {
 
 .app-shell {
   min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(56,189,248,0.14), transparent 28%), linear-gradient(135deg, #f8fbff 0%, #f4f7fb 100%);
+  background: #ffffff;
   transition: background 300ms ease, color 300ms ease;
 }
 
 .dark .app-shell {
-  background: radial-gradient(circle at top left, rgba(96,165,250,0.16), transparent 28%), linear-gradient(135deg, #0b1120 0%, #070a14 100%);
+  background: #000000;
 }
 
 .site-header {
@@ -30,20 +30,33 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  padding: 22px;
-  border-radius: 28px;
-  background: rgba(15,23,42,0.9);
-  border: 1px solid rgba(255,255,255,0.12);
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.dark .site-header {
+  background: rgba(0, 0, 0, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .site-title {
   margin: 0;
   display: block;
-  color: #93c5fd;
-  letter-spacing: 0.35em;
+  color: #2563eb; /* Blue-600 */
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.dark .site-title {
+  color: #ffffff;
 }
 
 .site-heading {
@@ -66,19 +79,30 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
-  padding: 0.9rem 1.2rem;
-  border: 1px solid rgba(255,255,255,0.16);
-  color: rgba(255,255,255,0.92);
-  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  color: #475569; /* Slate-600 */
   text-decoration: none;
   font-weight: 600;
-  transition: all 180ms ease;
+  font-size: 0.95rem;
+  transition: all 150ms ease;
+}
+
+.dark .nav-link,
+.dark .theme-toggle {
+  color: #cbd5e1; /* Slate-300 */
 }
 
 .nav-link:hover,
 .theme-toggle:hover {
-  background: rgba(255,255,255,0.16);
+  background: rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+}
+
+.dark .nav-link:hover,
+.dark .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .footer-bar {

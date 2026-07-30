@@ -11,6 +11,8 @@ export interface MarketplaceItem {
   image_url?: string;
   user_id?: number;
   is_mine?: boolean;
+  interest_count?: number;
+  has_indicated_interest?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,5 +46,9 @@ export class MarketplaceService {
 
   deleteItem(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/marketplace/items/${id}`);
+  }
+
+  indicateInterest(id: number): Observable<{interested: boolean, interest_count: number}> {
+    return this.http.post<{interested: boolean, interest_count: number}>(`${this.apiUrl}/marketplace/items/${id}/interest`, {});
   }
 }

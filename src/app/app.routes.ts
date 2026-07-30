@@ -8,6 +8,7 @@ import { ForgotPasswordComponent } from './forgot-password.component';
 import { ResetPasswordComponent } from './reset-password.component';
 import { MarketplaceComponent } from './marketplace.component';
 import { DiscoverComponent } from './discover.component';
+import { NotificationsComponent } from './notifications.component';
 import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
@@ -21,4 +22,5 @@ export const routes: Routes = [
   // New feature routes - protected
   { path: 'marketplace', component: MarketplaceComponent, canActivate: [authGuard] },
   { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
+  { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
 ];

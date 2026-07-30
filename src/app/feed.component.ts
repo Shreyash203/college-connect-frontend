@@ -4,8 +4,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { 
   IntercollegeService, 
   ConfessionRead, 
-  StudentAppRead,
-  NotificationRead
+  StudentAppRead
 } from './intercollege.service';
 
 @Component({
@@ -18,10 +17,9 @@ import {
 export class FeedComponent implements OnInit {
   private intercollegeService = inject(IntercollegeService);
 
-  activeTab: 'confessions' | 'launchpad' | 'notifications' = 'confessions';
+  activeTab: 'confessions' | 'launchpad' = 'confessions';
 
   // State
-  notifications: NotificationRead[] = [];
   confessions: ConfessionRead[] = [];
   studentApps: any[] = [];
   
@@ -32,12 +30,10 @@ export class FeedComponent implements OnInit {
   appMessageType: 'success' | 'error' = 'success';
 
   // Pagination State
-  notificationsSkip = 0;
   confessionsSkip = 0;
   appsSkip = 0;
   limit = 5;
 
-  isLoadingNotifications = true;
   isLoadingConfessions = true;
   isLoadingApps = true;
   isPostingConfession = false;
@@ -55,7 +51,6 @@ export class FeedComponent implements OnInit {
   }); 
 
   ngOnInit() {
-    this.loadNotifications();
     this.loadConfessions();
     this.loadApps();
   }
@@ -74,29 +69,6 @@ export class FeedComponent implements OnInit {
     if (err.error?.message) return err.error.message;
     if (err.message) return err.message;
     return fallback;
-  }
-
-  get unreadCount() {
-    return this.notifications.filter(n => !n.is_read).length;
-  }
-
-  loadNotifications(append = false) {
-    this.isLoadingNotifications = true;
-    this.intercollegeService.getNotifications(this.notificationsSkip, this.limit).subscribe({
-      next: (data) => {
-        this.notifications = append ? [...this.notifications, ...data] : data;
-        this.isLoadingNotifications = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.isLoadingNotifications = false;
-      }
-    });
-  }
-  
-  loadMoreNotifications() {
-    this.notificationsSkip += this.limit;
-    this.loadNotifications(true);
   }
 
   loadConfessions(append = false) {
@@ -141,16 +113,6 @@ export class FeedComponent implements OnInit {
   loadMoreApps() {
     this.appsSkip += this.limit;
     this.loadApps(true);
-  }
-
-  markAsRead(n: NotificationRead) {
-    if (n.is_read) return;
-    this.intercollegeService.markNotificationAsRead(n.id).subscribe({
-      next: () => {
-        n.is_read = true;
-      },
-      error: (err) => console.error(err)
-    });
   }
 
   postConfession() {
@@ -226,6 +188,29 @@ export class FeedComponent implements OnInit {
       error: (err) => {
         this.appMessage = this.extractErrorMessage(err, 'Failed to delete project.');
         this.appMessageType = 'error';
+      }
+    });
+  }
+
+  toggleLike(c: any) {
+    if (!c.likes_count) c.likes_count = 0;
+    
+    // Optimistic UI update
+    c.has_liked = !c.has_liked;
+    c.likes_count += c.has_liked ? 1 : -1;
+    
+    // Call backend
+    this.intercollegeService.likeConfession(c.id).subscribe({
+      next: (res) => {
+        // Sync with truth
+        c.has_liked = res.liked;
+        c.likes_count = res.likes_count;
+      },
+      error: (err) => {
+        // Revert on error
+        c.has_liked = !c.has_liked;
+        c.likes_count += c.has_liked ? 1 : -1;
+        console.error('Failed to like confession', err);
       }
     });
   }

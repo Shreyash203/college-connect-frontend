@@ -9,6 +9,8 @@ export interface ConfessionRead {
   content: string;
   created_at: string;
   is_mine: boolean;
+  likes_count: number;
+  has_liked: boolean;
 }
 
 export interface ConfessionCreate {
@@ -59,6 +61,15 @@ export class IntercollegeService {
 
   deleteConfession(id: number): Observable<void> {
     return this.http.delete<void>(`${this.confessionsUrl}/${id}`);
+  }
+
+  likeConfession(id: number): Observable<{liked: boolean, likes_count: number}> {
+    return this.http.post<{liked: boolean, likes_count: number}>(`${this.confessionsUrl}/${id}/like`, {});
+  }
+
+  // --- Marketplace ---
+  indicateMarketplaceInterest(id: number): Observable<{interested: boolean, interest_count: number}> {
+    return this.http.post<{interested: boolean, interest_count: number}>(`${API_BASE_URL}/marketplace/items/${id}/interest`, {});
   }
 
   // --- Launchpad ---

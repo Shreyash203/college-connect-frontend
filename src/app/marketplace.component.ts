@@ -113,4 +113,23 @@ export class MarketplaceComponent {
       }
     });
   }
+
+  toggleInterest(item: MarketplaceItem) {
+    // Optimistic update
+    item.has_indicated_interest = !item.has_indicated_interest;
+    item.interest_count = (item.interest_count || 0) + (item.has_indicated_interest ? 1 : -1);
+    
+    this.marketplaceService.indicateInterest(item.id).subscribe({
+      next: (res) => {
+        item.has_indicated_interest = res.interested;
+        item.interest_count = res.interest_count;
+      },
+      error: (err) => {
+        // Revert on error
+        item.has_indicated_interest = !item.has_indicated_interest;
+        item.interest_count = (item.interest_count || 0) + (item.has_indicated_interest ? 1 : -1);
+        console.error('Failed to indicate interest', err);
+      }
+    });
+  }
 }
