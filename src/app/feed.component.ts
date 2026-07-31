@@ -23,6 +23,9 @@ export class FeedComponent implements OnInit {
   confessions: ConfessionRead[] = [];
   studentApps: any[] = [];
   
+  // Debounce timers for likes to prevent DB spam
+  private likeTimeouts: { [key: number]: any } = {};
+  
   confessionMessage = '';
   confessionMessageType: 'success' | 'error' = 'success';
   
@@ -195,23 +198,32 @@ export class FeedComponent implements OnInit {
   toggleLike(c: any) {
     if (!c.likes_count) c.likes_count = 0;
     
-    // Optimistic UI update
+    // Optimistic UI update instantly for perfect UX
     c.has_liked = !c.has_liked;
     c.likes_count += c.has_liked ? 1 : -1;
     
-    // Call backend
-    this.intercollegeService.likeConfession(c.id).subscribe({
-      next: (res) => {
-        // Sync with truth
-        c.has_liked = res.liked;
-        c.likes_count = res.likes_count;
-      },
-      error: (err) => {
-        // Revert on error
-        c.has_liked = !c.has_liked;
-        c.likes_count += c.has_liked ? 1 : -1;
-        console.error('Failed to like confession', err);
-      }
-    });
+    // Clear any existing pending request for this specific post
+    if (this.likeTimeouts[c.id]) {
+      clearTimeout(this.likeTimeouts[c.id]);
+    }
+    
+    // Debounce: Wait 500ms after the user stops clicking before hitting the DB
+    this.likeTimeouts[c.id] = setTimeout(() => {
+      this.intercollegeService.likeConfession(c.id).subscribe({
+        next: (res) => {
+          // Sync with truth silently
+          c.has_liked = res.liked;
+          c.likes_count = res.likes_count;
+          delete this.likeTimeouts[c.id];
+        },
+        error: (err) => {
+          // Revert on error
+          c.has_liked = !c.has_liked;
+          c.likes_count += c.has_liked ? 1 : -1;
+          delete this.likeTimeouts[c.id];
+          console.error('Failed to like confession', err);
+        }
+      });
+    }, 500);
   }
 }

@@ -18,6 +18,9 @@ export class MarketplaceComponent {
   limit = 20;
   isLoading = true;
   isUploading = false;
+  
+  // Debounce timers to prevent database spamming
+  private interestTimeouts: { [key: number]: any } = {};
   errorMessage = '';
   successMessage = '';
 
@@ -119,17 +122,27 @@ export class MarketplaceComponent {
     item.has_indicated_interest = !item.has_indicated_interest;
     item.interest_count = (item.interest_count || 0) + (item.has_indicated_interest ? 1 : -1);
     
-    this.marketplaceService.indicateInterest(item.id).subscribe({
-      next: (res) => {
-        item.has_indicated_interest = res.interested;
-        item.interest_count = res.interest_count;
-      },
-      error: (err) => {
-        // Revert on error
-        item.has_indicated_interest = !item.has_indicated_interest;
-        item.interest_count = (item.interest_count || 0) + (item.has_indicated_interest ? 1 : -1);
-        console.error('Failed to indicate interest', err);
-      }
-    });
+    // Clear any existing pending request for this specific item
+    if (this.interestTimeouts[item.id]) {
+      clearTimeout(this.interestTimeouts[item.id]);
+    }
+    
+    // Wait 500ms before sending to database
+    this.interestTimeouts[item.id] = setTimeout(() => {
+      this.marketplaceService.indicateInterest(item.id).subscribe({
+        next: (res) => {
+          item.has_indicated_interest = res.interested;
+          item.interest_count = res.interest_count;
+          delete this.interestTimeouts[item.id];
+        },
+        error: (err) => {
+          // Revert on error
+          item.has_indicated_interest = !item.has_indicated_interest;
+          item.interest_count = (item.interest_count || 0) + (item.has_indicated_interest ? 1 : -1);
+          delete this.interestTimeouts[item.id];
+          console.error('Failed to indicate interest', err);
+        }
+      });
+    }, 500);
   }
 }
