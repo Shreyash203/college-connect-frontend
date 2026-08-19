@@ -1,131 +1,230 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, NgZone, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, RegisterRequest } from './auth.service';
 import { CurrentUserService } from './current-user.service';
+
+declare var google: any;
 
 @Component({
   selector: 'app-auth',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <div class="mx-auto flex max-w-md flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <div class="space-y-2">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">Join us</p>
-        <h2 class="text-3xl font-semibold text-slate-900">Create your account</h2>
-      </div>
-      <ng-container *ngIf="step === 'register'">
-        <form (ngSubmit)="register()" class="flex flex-col gap-4">
-          <label class="text-sm font-medium text-slate-700">Email</label>
-          <input type="email" [(ngModel)]="email" name="email" required [disabled]="isRegistering" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100" />
-          <label class="text-sm font-medium text-slate-700">Password</label>
-          <input type="password" [(ngModel)]="password" name="password" required minlength="8" [disabled]="isRegistering" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100" />
-          <button type="submit" [disabled]="isRegistering" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400">
-            {{ isRegistering ? 'Sending OTP...' : 'Register' }}
-          </button>
-        </form>
-      </ng-container>
-      <ng-container *ngIf="step === 'otp'">
-        <form (ngSubmit)="verifyOtp()" class="flex flex-col gap-4">
-          <p class="text-sm text-slate-600">We've sent a verification code to <strong>{{ email }}</strong>. Enter it below to complete your registration.</p>
-          <label class="text-sm font-medium text-slate-700">Verification Code</label>
-          <input type="text" [(ngModel)]="otp" name="otp" required maxlength="6" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500" />
-          <button type="submit" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700">Verify</button>
-          <button type="button" (click)="resendOtp()" class="text-sm text-blue-600 hover:underline">Resend code</button>
-        </form>
-      </ng-container>
-      <div *ngIf="message" [ngClass]="messageType === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'" class="rounded-2xl px-4 py-3 text-sm">{{ message }}</div>
-    </div>
-  `,
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './auth.component.html',
   styles: []
 })
-export class AuthComponent implements OnInit {
+export class AuthComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private currentUser = inject(CurrentUserService);
+  private ngZone = inject(NgZone);
 
+  mode: 'login' | 'register' = 'login';
+  step: 'form' | 'otp' = 'form';
+  
   email = '';
-
-  ngOnInit() {
-    if (localStorage.getItem('auth_token')) {
-      this.router.navigate(['/profile']);
-    }
-  }
   password = '';
+  showPassword = false;
   otp = '';
   pendingId: number | null = null;
-  step: 'register' | 'otp' = 'register';
+  
   message = '';
-  messageType: 'success' | 'error' = 'success';
-  isRegistering = false;
+  messageType: 'success' | 'error' | 'info' = 'info';
+  isProcessing = false;
+  returnUrl = '';
 
-  register() {
-    if (this.isRegistering) {
+  ngOnInit() {
+    // If the path is /register, start in register mode
+    if (this.router.url.includes('/register')) {
+      this.mode = 'register';
+    }
+
+    this.route.queryParams.subscribe(params => {
+      if (params['returnUrl']) {
+        this.returnUrl = params['returnUrl'];
+        if (this.returnUrl.includes('/marketplace')) {
+          this.showMessage('🔒 Campus Privacy: Log in with your college email to access the Campus Bazaar.', 'info');
+        } else if (this.returnUrl.includes('/discover')) {
+          this.showMessage('🔒 Student Privacy Protected: Log in to view student profiles and connect.', 'info');
+        } else if (this.returnUrl.includes('/feed')) {
+          this.showMessage('🔒 Log in with your college email to access Confessions and Launchpad.', 'info');
+        } else {
+          this.showMessage('🔒 Please log in to access this page.', 'info');
+        }
+      }
+    });
+
+    if (localStorage.getItem('auth_token')) {
+      this.router.navigateByUrl(this.returnUrl || '/profile');
+    }
+  }
+
+  ngAfterViewInit() {
+    this.initGoogleBtn();
+  }
+
+  toggleMode() {
+    this.mode = this.mode === 'login' ? 'register' : 'login';
+    this.step = 'form';
+    this.message = '';
+    
+    // Re-render google button to update text
+    setTimeout(() => {
+        this.initGoogleBtn();
+    }, 100);
+  }
+
+  private initGoogleBtn() {
+    if (typeof google !== 'undefined' && google.accounts?.id) {
+      google.accounts.id.initialize({
+        client_id: '774747436427-57ign6kn9qt9tat4ipq7cnb04hio3rmn.apps.googleusercontent.com',
+        callback: (response: any) => this.handleGoogleCredentialResponse(response),
+        ux_mode: 'popup',
+        auto_select: false
+      });
+      const el = document.getElementById('googleAuthBtn');
+      if (el) {
+        google.accounts.id.renderButton(el, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: this.mode === 'login' ? 'signin_with' : 'signup_with',
+          shape: 'pill'
+        });
+      }
+    } else {
+      setTimeout(() => this.initGoogleBtn(), 400);
+    }
+  }
+
+  handleGoogleCredentialResponse(response: any) {
+    this.ngZone.run(() => {
+      if (!response || !response.credential) return;
+      this.message = '';
+      this.isProcessing = true;
+      this.authService.loginWithGoogle(response.credential).subscribe({
+        next: (res) => {
+          localStorage.setItem('auth_token', res.access_token);
+          this.currentUser.setLoggedIn(true);
+          this.isProcessing = false;
+          this.router.navigateByUrl(this.returnUrl || '/profile');
+        },
+        error: (err) => {
+          this.showMessage(this.extractErrorMessage(err, 'Google authentication failed.'), 'error');
+          this.isProcessing = false;
+        }
+      });
+    });
+  }
+
+  extractErrorMessage(err: any, fallback: string): string {
+    if (!err) return fallback;
+    const detail = err.error?.detail;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) {
+      return detail.map((d: any) => {
+        if (typeof d === 'string') return d;
+        const field = d.loc && d.loc.length > 0 ? d.loc[d.loc.length - 1] : '';
+        return field ? `${field}: ${d.msg}` : d.msg;
+      }).join(' | ');
+    }
+    if (err.error?.message) return err.error.message;
+    if (err.message) return err.message;
+    return fallback;
+  }
+  
+  showMessage(msg: string, type: 'success' | 'error' | 'info') {
+    this.message = msg;
+    this.messageType = type;
+  }
+
+  onSubmit() {
+    if (this.isProcessing) return;
+
+    if (!this.email || !this.email.trim() || !this.password || !this.password.trim()) {
+      this.showMessage('Please enter both your college email and password.', 'error');
       return;
     }
 
+    if (this.mode === 'login') {
+      this.executeLogin();
+    } else {
+      this.executeRegister();
+    }
+  }
+
+  private executeLogin() {
+    this.isProcessing = true;
+    this.authService.login(this.email.trim(), this.password).subscribe({
+      next: (result) => {
+        localStorage.setItem('auth_token', result.access_token);
+        this.currentUser.setLoggedIn(true);
+        this.isProcessing = false;
+        this.router.navigateByUrl(this.returnUrl || '/profile');
+      },
+      error: (err) => {
+        this.showMessage(this.extractErrorMessage(err, 'Login failed.'), 'error');
+        this.isProcessing = false;
+      },
+    });
+  }
+
+  private executeRegister() {
     const request: RegisterRequest = {
-      email: this.email,
+      email: this.email.trim(),
       password: this.password,
     };
 
-    this.isRegistering = true;
+    this.isProcessing = true;
     this.authService.register(request).subscribe({
       next: (res) => {
         this.pendingId = res.pending_id;
         this.step = 'otp';
-        this.message = res.message;
-        this.messageType = 'success';
-        this.isRegistering = false;
+        this.showMessage(res.message, 'success');
+        this.isProcessing = false;
       },
       error: (err) => {
-        const detail = err.error?.detail || err.error?.message || err.statusText || err.message;
-        this.message = `Registration failed${detail ? ': ' + detail : '.'}`;
-        this.messageType = 'error';
-        this.isRegistering = false;
+        this.showMessage(this.extractErrorMessage(err, 'Registration failed.'), 'error');
+        this.isProcessing = false;
       },
     });
   }
 
   verifyOtp() {
     if (this.pendingId == null) {
-      this.message = 'No pending registration found.';
-      this.messageType = 'error';
+      this.showMessage('No pending registration found.', 'error');
       return;
     }
+    this.isProcessing = true;
     this.authService.verifyRegistration({ pending_id: this.pendingId, otp: this.otp }).subscribe({
       next: (res) => {
         localStorage.setItem('auth_token', res.access_token);
         this.currentUser.setLoggedIn(true);
-        this.message = 'Registration successful!';
-        this.messageType = 'success';
-        this.router.navigate(['/profile']);
+        this.showMessage('Registration successful!', 'success');
+        this.isProcessing = false;
+        this.router.navigateByUrl(this.returnUrl || '/profile');
       },
       error: (err) => {
-        const detail = err.error?.detail || err.error?.message || err.statusText || err.message;
-        this.message = `Verification failed${detail ? ': ' + detail : '.'}`;
-        this.messageType = 'error';
+        this.showMessage(this.extractErrorMessage(err, 'Verification failed.'), 'error');
+        this.isProcessing = false;
       },
     });
   }
 
   resendOtp() {
     if (this.pendingId == null) {
-      this.message = 'No pending registration found.';
-      this.messageType = 'error';
+      this.showMessage('No pending registration found.', 'error');
       return;
     }
     this.authService.resendOtp({ pending_id: this.pendingId }).subscribe({
       next: (res) => {
-        this.message = res.message;
-        this.messageType = 'success';
+        this.showMessage(res.message, 'success');
       },
       error: (err) => {
-        const detail = err.error?.detail || err.error?.message || err.statusText || err.message;
-        this.message = `Failed to resend code${detail ? ': ' + detail : '.'}`;
-        this.messageType = 'error';
+        this.showMessage(this.extractErrorMessage(err, 'Failed to resend code.'), 'error');
       },
-    });
+    }); 
   }
 }

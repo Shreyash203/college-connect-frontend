@@ -1,0 +1,69 @@
+<section class="mx-auto flex max-w-6xl flex-col gap-8 rounded-[32px] border border-slate-200/60 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/95 p-8 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-10">
+      <!-- Hero area -->
+      <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div class="space-y-5">
+          <p class="text-sm font-semibold uppercase tracking-[0.35em] text-blue-600">College Connect</p>
+          <h1 class="text-5xl font-semibold leading-tight text-slate-950 sm:text-6xl">Connect, trade, and share on campus.</h1>
+          <p class="max-w-2xl text-lg text-slate-600 dark:text-slate-400">Buy, sell, request items, meet new people, or post anonymous confessions— all in one place.</p>
+          <!-- Show Register / Login only when not logged in -->
+          <div class="flex flex-wrap gap-3" *ngIf="!(currentUser.user$ | async)">
+            <a routerLink="/register" class="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">Get started</a>
+            <a routerLink="/login" class="rounded-full border border-slate-300 dark:border-slate-600 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-100 dark:bg-slate-800">Login</a>
+          </div>
+        </div>
+        <div class="rounded-[28px] bg-slate-950 p-8 text-white shadow-[0_20px_50px_rgba(15,23,42,0.2)]">
+          <p class="text-sm uppercase tracking-[0.35em] text-sky-300">Campus-first</p>
+          <h2 class="mt-4 text-3xl font-semibold">Designed for campus life</h2>
+          <ul class="mt-6 space-y-4 text-sm text-slate-200">
+            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-400/20 text-sky-300">✓</span>Verified college members only</li>
+            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-400/20 text-sky-300">✓</span>Buy/Sell/Request bazaar</li>
+            <li class="flex items-start gap-3"><span class="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-400/20 text-sky-300">✓</span>Anonymous confessions</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feature blocks -->
+      <div class="grid gap-6 sm:grid-cols-3">
+        <!-- Buy/Sell/Request -->
+        <a routerLink="/marketplace" class="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              </span>
+              <span class="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg font-bold transition-colors">↗</span>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Campus Bazaar</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Post items you want to sell, buy, or request from fellow students in your college network.</p>
+          </div>
+        </a>
+
+        <!-- Meet New People -->
+        <a routerLink="/discover" class="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              </span>
+              <span class="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg font-bold transition-colors">↗</span>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Meet New People</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Discover peers with similar interests, join student clubs, or find study buddies.</p>
+          </div>
+        </a>
+
+        <!-- Confessions -->
+        <a routerLink="/feed" class="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+              </span>
+              <span class="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-lg font-bold transition-colors">↗</span>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Confessions & Launchpad</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Share thoughts anonymously or showcase your student projects to nationwide campuses.</p>
+          </div>
+        </a>
+      </div>
+    </section>

@@ -1,0 +1,224 @@
+<!-- Narrow Centered Feed Layout (Twitter/Insta style) -->
+<div class="max-w-2xl mx-auto p-4 sm:p-6 mt-4">
+      
+      <div class="flex justify-between items-center mb-6 px-2">
+        <h2 class="text-3xl font-bold tracking-tight">Across Campuses</h2>
+      </div>
+
+
+
+      <!-- Toggles -->
+      <div class="flex space-x-6 mb-8 border-b border-slate-200 dark:border-slate-800 px-2 overflow-x-auto">
+        <button 
+          (click)="activeTab = 'confessions'"
+          [class.text-blue-600]="activeTab === 'confessions'"
+          [class.border-blue-600]="activeTab === 'confessions'"
+          [class.border-b-2]="activeTab === 'confessions'"
+          class="pb-3 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors whitespace-nowrap">
+          Confessions
+        </button>
+        <button 
+          (click)="activeTab = 'launchpad'"
+          [class.text-blue-600]="activeTab === 'launchpad'"
+          [class.border-blue-600]="activeTab === 'launchpad'"
+          [class.border-b-2]="activeTab === 'launchpad'"
+          class="pb-3 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors whitespace-nowrap">
+          What's New
+        </button>
+      </div>
+
+      <!-- Confessions Tab -->
+      <div *ngIf="activeTab === 'confessions'">
+        
+        <!-- Post Confession Form -->
+        <!-- Post Confession Form -->
+        <form [formGroup]="confessionForm" (ngSubmit)="postConfession()" class="mb-8 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 bg-white dark:bg-slate-900 shadow-sm">
+          <div *ngIf="confessionMessage" [ngClass]="confessionMessageType === 'error' ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:border-red-800/50' : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50'" class="mb-4 rounded-lg px-4 py-3 text-sm border">
+            {{ confessionMessage }}
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            </div>
+            <div class="flex-grow">
+              <textarea 
+                formControlName="content"
+                placeholder="Share an anonymous confession or thought..." 
+                class="w-full bg-transparent text-lg placeholder-slate-400 dark:placeholder-slate-500 border-none focus:ring-0 outline-none resize-none pt-2 px-0"
+                rows="2"></textarea>
+              <p *ngIf="confessionForm.controls.content.touched && confessionForm.controls.content.errors?.['required']" class="text-xs text-red-500 mt-1 mb-2">Content is required.</p>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mt-3 border-t border-slate-100 dark:border-slate-800/60 pt-4 sm:pl-16">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              Anonymous Post
+            </span>
+            <button 
+              type="submit"
+              [disabled]="confessionForm.invalid || isPostingConfession"
+              class="bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center shadow-sm">
+              <svg *ngIf="isPostingConfession" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isPostingConfession ? 'Posting...' : 'Post' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Confessions Feed -->
+        <!-- Skeleton Loader -->
+        <div *ngIf="isLoadingConfessions && confessions.length === 0" class="space-y-4">
+          <div *ngFor="let _ of [1,2,3]" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 animate-pulse">
+            <div class="flex justify-between items-start mb-4">
+              <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded-full w-24"></div>
+              <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded w-16"></div>
+            </div>
+            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full mb-2"></div>
+            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-5/6"></div>
+          </div>
+        </div>
+
+        <!-- Real Data (Continuous Twitter-like scroll) -->
+        <div *ngIf="!isLoadingConfessions || confessions.length > 0" class="flex flex-col gap-4">
+          <div *ngFor="let c of confessions" class="p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 rounded-2xl hover:shadow-md transition-shadow">
+            <div class="flex items-start space-x-3 mb-3">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-sm border border-white dark:border-slate-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              </div>
+              <div class="flex flex-col flex-grow">
+                <div class="flex items-center flex-wrap gap-x-2">
+                  <span class="font-bold text-[15px] text-slate-900 dark:text-slate-100">Anonymous</span>
+                  <span class="text-slate-500 text-sm">@{{ c.college_domain.split('.')[0] }}</span>
+                  <span class="text-slate-400 text-sm hidden sm:inline">·</span>
+                  <span class="text-sm text-slate-500">{{ c.created_at | date:'MMM d' }}</span>
+                </div>
+                <p class="text-[15px] leading-relaxed whitespace-pre-wrap mt-1.5 text-slate-800 dark:text-slate-200">{{ c.content }}</p>
+              </div>
+              
+              <button *ngIf="c.is_mine" (click)="deleteConfession(c)" title="Delete" class="text-slate-400 hover:text-red-500 transition-colors shrink-0 p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </div>
+            
+            <div class="mt-3 sm:pl-[60px] flex items-center space-x-8 text-slate-400">
+               <button (click)="toggleLike(c)" [class.text-red-500]="c.has_liked" class="group flex items-center space-x-1.5 hover:text-red-500 transition-colors">
+                 <div class="p-1.5 rounded-full group-hover:bg-red-50 dark:group-hover:bg-red-900/30 transition-colors">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" [attr.fill]="c.has_liked ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                 </div>
+                 <span class="text-[13px] font-semibold">{{ c.likes_count || 'Like' }}</span>
+               </button>
+               <button class="group flex items-center space-x-1.5 hover:text-green-500 transition-colors">
+                 <div class="p-1.5 rounded-full group-hover:bg-green-50 dark:group-hover:bg-green-900/30 transition-colors">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                 </div>
+               </button>
+            </div>
+          </div>
+          <div *ngIf="!confessions.length" class="text-center py-12 text-slate-500 dark:text-slate-400">
+            No confessions yet. Be the first to post!
+          </div>
+          <div *ngIf="confessions.length > 0 && confessions.length % limit === 0" class="flex justify-center mt-6">
+            <button (click)="loadMoreConfessions()" class="px-6 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Load More</button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Launchpad Tab -->
+      <div *ngIf="activeTab === 'launchpad'">
+        
+        <!-- Post App Form -->
+        <form [formGroup]="appForm" (ngSubmit)="postApp()" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
+          <h3 class="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">Launch your Startup/App to students nationwide!</h3>
+          
+          <div *ngIf="appMessage" [ngClass]="appMessageType === 'error' ? 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 border-red-200 dark:border-red-800' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'" class="mb-4 rounded-xl px-4 py-3 text-sm border">
+            {{ appMessage }}
+          </div>
+
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">App or Startup Name *</label>
+          <input 
+            formControlName="app_name"
+            placeholder="e.g. StudyBuddy, CampusMart" 
+            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none mb-1" />
+          <p *ngIf="appForm.controls.app_name.touched && appForm.controls.app_name.errors?.['required']" class="text-xs text-red-500 mb-3">App name is required.</p>
+          
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-2 mb-1">Description *</label>
+          <textarea 
+            formControlName="description"
+            placeholder="What does it do? Why should students use it?" 
+            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-1"
+            rows="2"></textarea>
+          <p *ngIf="appForm.controls.description.touched && appForm.controls.description.errors?.['required']" class="text-xs text-red-500 mb-3">Description is required.</p>
+
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mt-2 mb-1">Project Link (Optional)</label>
+          <input 
+            formControlName="app_url"
+            placeholder="e.g. https://my-app.com" 
+            class="w-full p-3 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none mb-1" />
+          <p *ngIf="appForm.controls.app_url.touched && appForm.controls.app_url.errors?.['pattern']" class="text-xs text-red-500 mb-3">Please enter a valid website link (e.g. my-app.com or https://my-app.com)</p>
+
+          <div class="flex justify-end mt-4">
+            <button 
+              type="submit"
+              [disabled]="appForm.invalid || isPostingApp"
+              class="bg-green-600 text-white px-6 py-2 rounded-full font-medium shadow-md hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center">
+              <svg *ngIf="isPostingApp" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isPostingApp ? 'Launching...' : '🚀 Launch to Network' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Launchpad Feed -->
+        <!-- Skeleton Loader -->
+        <div *ngIf="isLoadingApps && studentApps.length === 0" class="grid gap-6 sm:grid-cols-2">
+          <div *ngFor="let _ of [1,2,3,4]" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 animate-pulse">
+            <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded w-1/3 mb-4"></div>
+            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full mb-2"></div>
+            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-5/6 mb-6"></div>
+            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/4 mt-auto"></div>
+          </div>
+        </div>
+
+        <!-- Real Data -->
+        <div *ngIf="!isLoadingApps || studentApps.length > 0">
+          <div class="grid gap-6 sm:grid-cols-2">
+          <div *ngFor="let app of studentApps" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all group relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-bl-full opacity-10 group-hover:opacity-20 transition-opacity"></div>
+            
+            <div class="flex items-center space-x-2 mb-3">
+              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                Built by 📍 {{ app.college_domain }}
+              </span>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{{ app.app_name }}</h3>
+            <p class="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">{{ app.description }}</p>
+            
+            <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+               <a *ngIf="app.app_url" [href]="app.app_url" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+                 Visit Project <span class="ml-1">→</span>
+               </a>
+               <span *ngIf="!app.app_url" class="text-sm text-slate-400 italic">No link provided</span>
+               <button *ngIf="app.is_mine" (click)="deleteApp(app)" title="Delete Project" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors ml-auto">
+                 🗑️ Delete
+               </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!studentApps.length" class="text-center py-12 text-slate-500 dark:text-slate-400">
+            No projects launched yet. Be the first!
+        </div>
+        <div *ngIf="studentApps.length > 0 && studentApps.length % limit === 0" class="flex justify-center mt-6 mb-8">
+            <button (click)="loadMoreApps()" class="px-6 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Load More</button>
+        </div>
+      </div>
+
+    </div>

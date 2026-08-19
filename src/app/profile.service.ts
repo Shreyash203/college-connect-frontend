@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { API_BASE_URL } from './api.config';
 
@@ -37,8 +37,8 @@ export class ProfileService {
     return this.http.put<ProfileRead>(`${this.apiUrl}/profiles/me`, profile);
   }
 
-  getProfiles(): Observable<ProfileRead[]> {
-    return this.http.get<ProfileRead[]>(`${this.apiUrl}/profiles`);
+  getProfiles(skip: number = 0, limit: number = 5): Observable<ProfileRead[]> {
+    return this.http.get<ProfileRead[]>(`${this.apiUrl}/profiles?skip=${skip}&limit=${limit}`);
   }
 
   getMyProfile(): Observable<ProfileRead> {
@@ -54,9 +54,8 @@ export class ProfileService {
         const headers = new HttpHeaders().set('x-ms-blob-type', 'BlockBlob');
         return this.http.put(urls.upload_url, file, { headers, responseType: 'text' }).pipe(
           switchMap(() => {
-            return this.http.post<{url: string}>(`${this.apiUrl}/profiles/me/image`, {
-              image_url: urls.image_url
-            });
+            // We just return the image URL directly so the form can submit it with the profile creation.
+            return of({ url: urls.image_url });
           })
         );
       })

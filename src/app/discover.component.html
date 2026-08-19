@@ -1,0 +1,52 @@
+<section class="mx-auto max-w-7xl">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold tracking-tight">Discover Connections</h2>
+      </div>
+      <!-- Skeleton Loader -->
+      <div *ngIf="isLoading && profiles.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div *ngFor="let _ of [1,2,3,4,5,6,7,8]" class="bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 text-center animate-pulse">
+          <div class="mx-auto w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 mb-4"></div>
+          <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded w-3/4 mx-auto mb-2"></div>
+          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2 mx-auto mb-4"></div>
+          <div class="flex justify-center gap-2 mt-3">
+            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-12"></div>
+            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-16"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real Data -->
+      <div *ngIf="!isLoading || profiles.length > 0">
+        <div *ngIf="profiles.length; else noProfiles">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div *ngFor="let p of profiles" class="group bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/60 rounded-2xl p-6 text-center hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300">
+              <div class="mb-5 relative inline-block">
+                <img *ngIf="p.image_url" [src]="p.image_url" class="mx-auto w-28 h-28 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-300" />
+                <div *ngIf="!p.image_url" class="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center font-bold text-slate-400 text-lg border-4 border-white dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                  {{ (p.display_name || 'U').charAt(0).toUpperCase() }}
+                </div>
+              </div>
+              <h3 class="text-xl font-bold tracking-tight mb-1">{{ p.display_name || 'Unnamed' }}</h3>
+              <p class="text-sm font-semibold text-blue-600 mb-4">{{ p.department || 'N/A' }} &bull; {{ p.year || 'N/A' }}</p>
+              <div class="flex flex-wrap justify-center gap-1.5 mb-2">
+                 <span *ngFor="let interest of p.interests" class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+                   {{ interest }}
+                 </span>
+              </div>
+            </div>
+        </div>
+        <div *ngIf="profiles.length > 0 && profiles.length % limit === 0" class="flex justify-center mt-12">
+          <button (click)="loadMore()" class="px-8 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">Load More Connections</button>
+        </div>
+      </div>
+      <ng-template #noProfiles>
+        <div class="py-20 text-center">
+          <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">No connections</h3>
+          <p class="text-slate-500 mt-1">No profiles found in your network.</p>
+        </div>
+      </ng-template>
+      </div>
+    </section>

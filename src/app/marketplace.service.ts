@@ -9,6 +9,10 @@ export interface MarketplaceItem {
   title: string;
   description?: string;
   image_url?: string;
+  user_id?: number;
+  is_mine?: boolean;
+  interest_count?: number;
+  has_indicated_interest?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,7 +40,15 @@ export class MarketplaceService {
     );
   }
 
-  getItems(): Observable<MarketplaceItem[]> {
-    return this.http.get<MarketplaceItem[]>(`${this.apiUrl}/marketplace/items`);
+  getItems(skip: number = 0, limit: number = 5): Observable<MarketplaceItem[]> {
+    return this.http.get<MarketplaceItem[]>(`${this.apiUrl}/marketplace/items?skip=${skip}&limit=${limit}`);
+  }
+
+  deleteItem(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/marketplace/items/${id}`);
+  }
+
+  indicateInterest(id: number): Observable<{interested: boolean, interest_count: number}> {
+    return this.http.post<{interested: boolean, interest_count: number}>(`${this.apiUrl}/marketplace/items/${id}/interest`, {});
   }
 }

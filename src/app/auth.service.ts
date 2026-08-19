@@ -65,6 +65,10 @@ export class AuthService {
     });
   }
 
+  loginWithGoogle(credential: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/google`, { credential });
+  }
+
   forgotPassword(data: ForgotPasswordRequest): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.apiUrl}/auth/forgot-password`, data);
   }

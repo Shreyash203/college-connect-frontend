@@ -1,0 +1,61 @@
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="mb-8 border-b border-slate-200 dark:border-slate-800/60 pb-5">
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Notifications</h1>
+    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Stay updated with activities across the campus network.</p>
+  </div>
+
+  <div *ngIf="isLoading && notifications.length === 0" class="space-y-4">
+    <div *ngFor="let _ of [1,2,3,4,5]" class="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/40 p-4 animate-pulse flex gap-4">
+      <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 shrink-0"></div>
+      <div class="flex-1 space-y-3 py-1">
+        <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
+        <div class="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading || notifications.length > 0" class="flex flex-col space-y-4">
+    <div *ngFor="let n of notifications" 
+         (mouseenter)="markAsRead(n)"
+         class="group relative flex gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-default"
+         [class.bg-blue-50]="!n.is_read"
+         [class.dark:bg-blue-900/20]="!n.is_read"
+         [class.border-blue-100]="!n.is_read"
+         [class.dark:border-blue-800]="!n.is_read">
+      
+      <div class="mt-1 shrink-0">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center"
+             [ngClass]="n.is_read ? 'bg-slate-100 text-slate-400 dark:bg-slate-800' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </div>
+      </div>
+      
+      <div class="flex-1">
+        <p class="text-[15px] leading-snug" [class.font-semibold]="!n.is_read" [class.text-slate-900]="!n.is_read" [class.dark:text-white]="!n.is_read" [class.text-slate-600]="n.is_read" [class.dark:text-slate-300]="n.is_read">
+          {{ n.message }}
+        </p>
+        <p class="mt-1.5 text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+          {{ n.created_at | date:'medium' }}
+        </p>
+      </div>
+      
+      <div *ngIf="!n.is_read" class="absolute top-4 right-4 w-2.5 h-2.5 bg-blue-500 rounded-full shadow-sm shadow-blue-500/50"></div>
+    </div>
+    
+    <div *ngIf="!notifications.length" class="text-center py-16 px-6 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/20">
+      <div class="mx-auto w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">You're all caught up!</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400">No new notifications to display right now.</p>
+    </div>
+    
+    <div *ngIf="notifications.length > 0 && notifications.length % limit === 0" class="flex justify-center mt-8">
+      <button (click)="loadMoreNotifications()" class="px-6 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm font-medium text-sm">
+        Load More
+      </button>
+    </div>
+  </div>
+</div>
