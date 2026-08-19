@@ -25,7 +25,6 @@
                 <div *ngIf="!p.image_url" class="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center font-bold text-slate-400 text-lg border-4 border-white dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-300">
                   {{ (p.display_name || 'U').charAt(0).toUpperCase() }}
                 </div>
-                <div class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
               </div>
               <h3 class="text-xl font-bold tracking-tight mb-1">{{ p.display_name || 'Unnamed' }}</h3>
               <p class="text-sm font-semibold text-blue-600 mb-4">{{ p.department || 'N/A' }} &bull; {{ p.year || 'N/A' }}</p>
