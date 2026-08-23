@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MarketplaceService, MarketplaceItem } from './marketplace.service';
+import { ChatService } from './chat.service';
 
 @Component({
   selector: 'app-marketplace',
@@ -12,6 +14,8 @@ import { MarketplaceService, MarketplaceItem } from './marketplace.service';
 })
 export class MarketplaceComponent {
   private marketplaceService = inject(MarketplaceService);
+  private chatService = inject(ChatService);
+  private router = inject(Router);
   selectedFile: File | null = null;
   items: MarketplaceItem[] = [];
   skip = 0;
@@ -144,5 +148,17 @@ export class MarketplaceComponent {
         }
       });
     }, 500);
+  }
+
+  messageSeller(userId: number) {
+    if (!userId) return;
+    this.chatService.startConversation(userId).subscribe({
+      next: (conv) => {
+        this.router.navigate(['/messages'], { queryParams: { conversationId: conv.id } });
+      },
+      error: (err) => {
+        console.error('Error starting conversation', err);
+      }
+    });
   }
 }

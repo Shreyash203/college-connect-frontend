@@ -10,6 +10,7 @@ export interface MarketplaceItem {
   description?: string;
   image_url?: string;
   user_id?: number;
+  email?: string;
   is_mine?: boolean;
   interest_count?: number;
   has_indicated_interest?: boolean;

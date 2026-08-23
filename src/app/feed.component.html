@@ -94,7 +94,7 @@
                   <span class="font-bold text-[15px] text-slate-900 dark:text-slate-100">Anonymous</span>
                   <span class="text-slate-500 text-sm">@{{ c.college_domain.split('.')[0] }}</span>
                   <span class="text-slate-400 text-sm hidden sm:inline">·</span>
-                  <span class="text-sm text-slate-500">{{ c.created_at | date:'MMM d' }}</span>
+                  <span class="text-xs text-slate-400 ml-1">{{ c.created_at | date:'MMM d, h:mm a' }}</span>
                 </div>
                 <p class="text-[15px] leading-relaxed whitespace-pre-wrap mt-1.5 text-slate-800 dark:text-slate-200">{{ c.content }}</p>
               </div>
@@ -190,14 +190,15 @@
         <!-- Real Data -->
         <div *ngIf="!isLoadingApps || studentApps.length > 0">
           <div class="grid gap-6 sm:grid-cols-2">
-          <div *ngFor="let app of studentApps" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all group relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-bl-full opacity-10 group-hover:opacity-20 transition-opacity"></div>
-            
-            <div class="flex items-center space-x-2 mb-3">
-              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                Built by 📍 {{ app.college_domain }}
-              </span>
-            </div>
+            <div *ngFor="let app of studentApps" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all group relative overflow-hidden flex flex-col">
+              <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-bl-full opacity-10 group-hover:opacity-20 transition-opacity"></div>
+              
+              <div class="flex items-center space-x-2 mb-3 flex-wrap gap-y-2">
+                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                  Built by 🎓 {{ app.college_domain }}
+                </span>
+                <span class="text-xs text-slate-400 font-medium">{{ app.created_at | date:'MMM d, h:mm a' }}</span>
+              </div>
             
             <h3 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{{ app.app_name }}</h3>
             <p class="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">{{ app.description }}</p>

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ChatService, Conversation, ChatMessage } from '../chat.service';
 import { ProfileService } from '../profile.service';
 import { Subscription } from 'rxjs';
@@ -17,6 +17,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private chatService = inject(ChatService);
   private profileService = inject(ProfileService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private location = inject(Location);
 
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
@@ -68,6 +69,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.getConversations().subscribe({
       next: (data) => {
         this.conversations = data;
+        
+        // Auto-open conversation if passed via query params
+        const autoConvId = this.route.snapshot.queryParamMap.get('conversationId');
+        if (autoConvId && !this.activeConversation) {
+          const convToOpen = this.conversations.find(c => c.id.toString() === autoConvId);
+          if (convToOpen) {
+            this.openConversation(convToOpen);
+          }
+        }
       },
       error: (err) => console.error(err)
     });

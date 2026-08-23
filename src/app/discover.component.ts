@@ -72,7 +72,7 @@ export class DiscoverComponent implements OnInit {
   messageUser(userId: number) {
     this.chatService.startConversation(userId).subscribe({
       next: (conv) => {
-        this.router.navigate(['/messages']);
+        this.router.navigate(['/messages'], { queryParams: { conversationId: conv.id } });
       },
       error: (err) => {
         console.error('Error starting conversation', err);
