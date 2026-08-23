@@ -78,7 +78,8 @@ export class FeedComponent implements OnInit {
     this.isLoadingConfessions = true;
     this.intercollegeService.getConfessions(this.confessionsSkip, this.limit).subscribe({
       next: (data) => {
-        this.confessions = append ? [...this.confessions, ...data] : data;
+        const formatted = data.map(c => ({ ...c, created_at: c.created_at.endsWith('Z') ? c.created_at : c.created_at + 'Z' }));
+        this.confessions = append ? [...this.confessions, ...formatted] : formatted;
         this.isLoadingConfessions = false;
       },
       error: (err) => {
@@ -98,10 +99,11 @@ export class FeedComponent implements OnInit {
     this.intercollegeService.getApps(this.appsSkip, this.limit).subscribe({
       next: (data) => {
         const formatted = data.map(app => {
-          if (app.app_url && !app.app_url.startsWith('http')) {
-            app.app_url = 'https://' + app.app_url;
+          let updatedApp = { ...app, created_at: app.created_at.endsWith('Z') ? app.created_at : app.created_at + 'Z' };
+          if (updatedApp.app_url && !updatedApp.app_url.startsWith('http')) {
+            updatedApp.app_url = 'https://' + updatedApp.app_url;
           }
-          return app;
+          return updatedApp;
         });
         this.studentApps = append ? [...this.studentApps, ...formatted] : formatted;
         this.isLoadingApps = false;
@@ -124,7 +126,8 @@ export class FeedComponent implements OnInit {
     this.confessionMessage = '';
     this.intercollegeService.createConfession({ content: this.confessionForm.value.content! }).subscribe({
       next: (res) => {
-        this.confessions.unshift(res);
+        let updatedRes = { ...res, created_at: res.created_at.endsWith('Z') ? res.created_at : res.created_at + 'Z' };
+        this.confessions.unshift(updatedRes);
         this.confessionForm.reset();
         this.confessionMessage = 'Confession posted completely anonymously!';
         this.confessionMessageType = 'success';
@@ -154,7 +157,8 @@ export class FeedComponent implements OnInit {
     };
     this.intercollegeService.createApp(newApp).subscribe({
       next: (res) => {
-        this.studentApps.unshift(res);
+        let updatedRes = { ...res, created_at: res.created_at.endsWith('Z') ? res.created_at : res.created_at + 'Z' };
+        this.studentApps.unshift(updatedRes);
         this.appForm.reset();
         this.appMessage = 'App launched to the student network!';
         this.appMessageType = 'success';

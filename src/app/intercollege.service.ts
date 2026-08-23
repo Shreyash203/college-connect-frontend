@@ -25,6 +25,7 @@ export interface StudentAppRead {
   college_domain: string;
   created_at: string;
   user_id: number;
+  email?: string;
   is_mine: boolean;
   [key: string]: any;
 }
