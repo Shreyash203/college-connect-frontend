@@ -1,6 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ProfileService, ProfileRead } from './profile.service';
+import { ChatService } from './chat.service';
 
 @Component({
   selector: 'app-discover',
@@ -11,6 +13,8 @@ import { ProfileService, ProfileRead } from './profile.service';
 })
 export class DiscoverComponent implements OnInit {
   private profileService = inject(ProfileService);
+  private chatService = inject(ChatService);
+  private router = inject(Router);
   public profiles: ProfileRead[] = [];
   skip = 0;
   limit = 20;
@@ -55,6 +59,17 @@ export class DiscoverComponent implements OnInit {
   loadMore() {
     this.skip += this.limit;
     this.loadProfiles(true);
+  }
+
+  messageUser(userId: number) {
+    this.chatService.startConversation(userId).subscribe({
+      next: (conv) => {
+        this.router.navigate(['/messages']);
+      },
+      error: (err) => {
+        console.error('Error starting conversation', err);
+      }
+    });
   }
 }
 

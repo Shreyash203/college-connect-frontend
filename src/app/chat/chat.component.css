@@ -1,0 +1,3 @@
+.scrollable-messages::-webkit-scrollbar { width: 6px; }
+.scrollable-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.dark .scrollable-messages::-webkit-scrollbar-thumb { background: #334155; }

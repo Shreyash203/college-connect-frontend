@@ -78,11 +78,14 @@
             </div>
             <h3 class="text-xl font-bold tracking-tight mb-1">{{ p.display_name || 'Unnamed' }}</h3>
             <p class="text-sm font-semibold text-blue-600 mb-4">{{ p.department || 'N/A' }} &bull; Class of {{ p.year || 'N/A' }}</p>
-            <div class="flex flex-wrap justify-center gap-1.5 mb-2">
+            <div class="flex flex-wrap justify-center gap-1.5 mb-4">
                <span *ngFor="let interest of p.interests" class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
                  {{ interest }}
                </span>
             </div>
+            <button (click)="messageUser(p.user_id)" class="w-full mt-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl transition-colors text-sm shadow-sm">
+              Message
+            </button>
           </div>
         </div>
         <div *ngIf="profiles.length > 0 && profiles.length % limit === 0" class="flex justify-center mt-12">
