@@ -106,4 +106,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   goBack() {
     this.location.back();
   }
+
+  closeConversation() {
+    this.activeConversation = null;
+    this.messages = [];
+  }
 }

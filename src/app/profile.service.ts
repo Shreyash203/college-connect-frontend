@@ -17,6 +17,7 @@ export interface ProfileRead {
   image_url?: string;
   id: number;
   user_id: number;
+  email?: string;
   display_name?: string;
   department?: string;
   year?: string;

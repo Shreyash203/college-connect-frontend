@@ -18,6 +18,7 @@ import { CurrentUserService } from './current-user.service';
 export class ProfileComponent implements OnInit {
   selectedFile: File | null = null;
   imageUrl: string | null = null;
+  userEmail: string = '';
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
   private currentUser = inject(CurrentUserService);
@@ -46,6 +47,9 @@ export class ProfileComponent implements OnInit {
           bio: profile.bio || '',
           interests: profile.interests?.join(', ') || ''
         });
+        if (profile.email) {
+          this.userEmail = profile.email;
+        }
         this.imageUrl = profile.image_url || null;
         this.message = 'Loaded existing profile. You can edit and save.';
       },

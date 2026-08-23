@@ -77,7 +77,9 @@
               </div>
             </div>
             <h3 class="text-xl font-bold tracking-tight mb-1">{{ p.display_name || 'Unnamed' }}</h3>
-            <p class="text-sm font-semibold text-blue-600 mb-4">{{ p.department || 'N/A' }} &bull; Class of {{ p.year || 'N/A' }}</p>
+            <p class="text-sm font-semibold text-blue-600 mb-1">{{ p.department || 'N/A' }} &bull; Class of {{ p.year || 'N/A' }}</p>
+            <p *ngIf="p.email" class="text-xs text-slate-500 mb-4">{{ p.email }}</p>
+            <p *ngIf="!p.email" class="text-xs text-slate-500 mb-4 opacity-0">No email</p>
             <div class="flex flex-wrap justify-center gap-1.5 mb-4">
                <span *ngFor="let interest of p.interests" class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
                  {{ interest }}
