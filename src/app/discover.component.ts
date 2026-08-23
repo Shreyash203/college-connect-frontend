@@ -21,9 +21,17 @@ export class DiscoverComponent implements OnInit {
   isLoading = false;
   selectedCategory: string | null = null;
   categoryTitle: string = '';
+  myYear: string = 'Your Batch';
 
   ngOnInit() {
-    // We don't load profiles immediately on the grid view
+    this.profileService.getMyProfile().subscribe({
+      next: (profile) => {
+        if (profile.year) {
+          this.myYear = profile.year;
+        }
+      },
+      error: () => {}
+    });
   }
 
   viewCategory(category: string, title: string) {
