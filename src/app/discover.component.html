@@ -1,52 +1,107 @@
 <section class="mx-auto max-w-7xl">
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold tracking-tight">Discover Connections</h2>
-      </div>
-      <!-- Skeleton Loader -->
-      <div *ngIf="isLoading && profiles.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <div *ngFor="let _ of [1,2,3,4,5,6,7,8]" class="bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 text-center animate-pulse">
-          <div class="mx-auto w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 mb-4"></div>
-          <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded w-3/4 mx-auto mb-2"></div>
-          <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2 mx-auto mb-4"></div>
-          <div class="flex justify-center gap-2 mt-3">
-            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-12"></div>
-            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-16"></div>
-          </div>
-        </div>
-      </div>
+  <!-- View 1: 4-Card Category Grid -->
+  <div *ngIf="!selectedCategory" class="animate-in fade-in duration-500">
+    <div class="mb-10 text-center">
+      <h2 class="text-4xl font-extrabold tracking-tight mb-3">Discover Connections</h2>
+      <p class="text-lg text-slate-500 dark:text-slate-400">Expand your network with curated categories.</p>
+    </div>
 
-      <!-- Real Data -->
-      <div *ngIf="!isLoading || profiles.length > 0">
-        <div *ngIf="profiles.length; else noProfiles">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+      
+      <!-- Card 1: Common Ground -->
+      <button (click)="viewCategory('hobbies', 'Common Ground')" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 p-8 text-left transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/20 min-h-[220px] sm:min-h-[260px] flex flex-col justify-end">
+        <div class="absolute -right-6 -top-6 opacity-20 transition-transform group-hover:scale-110">
+          <svg class="h-40 w-40 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
+        </div>
+        <h3 class="text-3xl font-bold text-white mb-2 relative z-10">Common Ground</h3>
+        <p class="text-blue-100 relative z-10 font-medium text-lg">Find peers with shared interests</p>
+      </button>
+
+      <!-- Card 2: Batchmates -->
+      <button (click)="viewCategory('batch', 'Class of ' + (profiles.length ? profiles[0].year : '2026'))" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 p-8 text-left transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-teal-500/20 min-h-[220px] sm:min-h-[260px] flex flex-col justify-end">
+        <div class="absolute -right-6 -top-6 opacity-20 transition-transform group-hover:scale-110">
+          <svg class="h-40 w-40 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
+        </div>
+        <h3 class="text-3xl font-bold text-white mb-2 relative z-10">Your Batchmates</h3>
+        <p class="text-emerald-100 relative z-10 font-medium text-lg">Connect with your class</p>
+      </button>
+
+      <!-- Card 3: Seniors -->
+      <button (click)="viewCategory('seniors', 'Campus Seniors')" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-500 to-purple-600 p-8 text-left transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 min-h-[220px] sm:min-h-[260px] flex flex-col justify-end">
+        <div class="absolute -right-6 -top-6 opacity-20 transition-transform group-hover:scale-110">
+          <svg class="h-40 w-40 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h3 class="text-3xl font-bold text-white mb-2 relative z-10">Campus Seniors</h3>
+        <p class="text-violet-100 relative z-10 font-medium text-lg">Get guidance from upperclassmen</p>
+      </button>
+
+      <!-- Card 4: Juniors -->
+      <button (click)="viewCategory('juniors', 'The New Wave')" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 p-8 text-left transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/20 min-h-[220px] sm:min-h-[260px] flex flex-col justify-end">
+        <div class="absolute -right-6 -top-6 opacity-20 transition-transform group-hover:scale-110">
+          <svg class="h-40 w-40 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        </div>
+        <h3 class="text-3xl font-bold text-white mb-2 relative z-10">The New Wave</h3>
+        <p class="text-amber-100 relative z-10 font-medium text-lg">Welcome the underclassmen</p>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- View 2: Profile List -->
+  <div *ngIf="selectedCategory" class="animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="flex items-center mb-8 gap-4">
+      <button (click)="goBack()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      </button>
+      <h2 class="text-3xl font-bold tracking-tight">{{ categoryTitle }}</h2>
+    </div>
+
+    <!-- Skeleton Loader -->
+    <div *ngIf="isLoading && profiles.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div *ngFor="let _ of [1,2,3,4,5,6,7,8]" class="bg-white dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 text-center animate-pulse">
+        <div class="mx-auto w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 mb-4"></div>
+        <div class="h-5 bg-slate-200 dark:bg-slate-800 rounded w-3/4 mx-auto mb-2"></div>
+        <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2 mx-auto mb-4"></div>
+      </div>
+    </div>
+
+    <!-- Real Data -->
+    <div *ngIf="!isLoading || profiles.length > 0">
+      <div *ngIf="profiles.length; else noProfiles">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <div *ngFor="let p of profiles" class="group bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/60 rounded-2xl p-6 text-center hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300">
-              <div class="mb-5 relative inline-block">
-                <img *ngIf="p.image_url" [src]="p.image_url" class="mx-auto w-28 h-28 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-300" />
-                <div *ngIf="!p.image_url" class="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center font-bold text-slate-400 text-lg border-4 border-white dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-300">
-                  {{ (p.display_name || 'U').charAt(0).toUpperCase() }}
-                </div>
-              </div>
-              <h3 class="text-xl font-bold tracking-tight mb-1">{{ p.display_name || 'Unnamed' }}</h3>
-              <p class="text-sm font-semibold text-blue-600 mb-4">{{ p.department || 'N/A' }} &bull; {{ p.year || 'N/A' }}</p>
-              <div class="flex flex-wrap justify-center gap-1.5 mb-2">
-                 <span *ngFor="let interest of p.interests" class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
-                   {{ interest }}
-                 </span>
+          <div *ngFor="let p of profiles" class="group bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/60 rounded-2xl p-6 text-center hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300">
+            <div class="mb-5 relative inline-block">
+              <img *ngIf="p.image_url" [src]="p.image_url" class="mx-auto w-28 h-28 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-300" />
+              <div *ngIf="!p.image_url" class="mx-auto w-28 h-28 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center font-bold text-slate-400 text-lg border-4 border-white dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                {{ (p.display_name || 'U').charAt(0).toUpperCase() }}
               </div>
             </div>
+            <h3 class="text-xl font-bold tracking-tight mb-1">{{ p.display_name || 'Unnamed' }}</h3>
+            <p class="text-sm font-semibold text-blue-600 mb-4">{{ p.department || 'N/A' }} &bull; Class of {{ p.year || 'N/A' }}</p>
+            <div class="flex flex-wrap justify-center gap-1.5 mb-2">
+               <span *ngFor="let interest of p.interests" class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+                 {{ interest }}
+               </span>
+            </div>
+          </div>
         </div>
         <div *ngIf="profiles.length > 0 && profiles.length % limit === 0" class="flex justify-center mt-12">
-          <button (click)="loadMore()" class="px-8 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">Load More Connections</button>
+          <button (click)="loadMore()" class="px-8 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">Load More</button>
         </div>
       </div>
+      
       <ng-template #noProfiles>
-        <div class="py-20 text-center">
-          <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        <div class="py-20 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+          <div class="w-16 h-16 bg-white dark:bg-slate-800 shadow-sm rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           </div>
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">No connections</h3>
-          <p class="text-slate-500 mt-1">No profiles found in your network.</p>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">No connections found</h3>
+          <p class="text-slate-500 mt-1 mb-6">We couldn't find anyone in this category right now.</p>
+          <button (click)="goBack()" class="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-500">
+            &larr; Return to Categories
+          </button>
         </div>
       </ng-template>
-      </div>
-    </section>
+    </div>
+  </div>
+</section>

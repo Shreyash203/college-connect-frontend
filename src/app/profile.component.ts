@@ -26,7 +26,7 @@ export class ProfileComponent implements OnInit {
   profileForm = new FormGroup({
     display_name: new FormControl('', [Validators.required]),
     department: new FormControl(''),
-    year: new FormControl(''),
+    year: new FormControl('', [Validators.required]),
     bio: new FormControl(''),
     interests: new FormControl('')
   });

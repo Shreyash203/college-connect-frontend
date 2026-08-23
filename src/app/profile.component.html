@@ -24,7 +24,7 @@
 
       <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="flex flex-col gap-5">
         <div>
-          <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">Display Name</label>
+          <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">Display Name <span class="text-red-500">*</span></label>
           <input type="text" formControlName="display_name" class="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" />
         </div>
         
@@ -34,8 +34,8 @@
             <input type="text" formControlName="department" placeholder="e.g. Computer Science" class="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" />
           </div>
           <div>
-            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">Year of Study</label>
-            <input type="text" formControlName="year" placeholder="e.g. Senior" class="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" />
+            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">Year of Passing <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="year" placeholder="e.g. 2026" class="w-full rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 px-4 py-2.5 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" />
           </div>
         </div>
         
