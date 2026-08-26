@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IntercollegeService, NotificationRead } from './intercollege.service';
+import { IntercollegeService, NotificationRead } from '../feed/services/intercollege.service';
 
 @Component({
   selector: 'app-notifications',

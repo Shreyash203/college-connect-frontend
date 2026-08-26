@@ -1,15 +1,15 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home.component';
-import { AuthComponent } from './auth.component';
-import { ProfileComponent } from './profile.component';
-import { FeedComponent } from './feed.component';
-import { ForgotPasswordComponent } from './forgot-password.component';
-import { ResetPasswordComponent } from './reset-password.component';
-import { MarketplaceComponent } from './marketplace.component';
-import { DiscoverComponent } from './discover.component';
-import { NotificationsComponent } from './notifications.component';
-import { ChatComponent } from './chat/chat.component';
-import { authGuard } from './auth.guard';
+import { HomeComponent } from './features/home/home.component';
+import { AuthComponent } from './features/authentication/auth.component';
+import { ProfileComponent } from './features/profile/profile.component';
+import { FeedComponent } from './features/feed/feed.component';
+import { ForgotPasswordComponent } from './features/authentication/forgot-password.component';
+import { ResetPasswordComponent } from './features/authentication/reset-password.component';
+import { MarketplaceComponent } from './features/marketplace/marketplace.component';
+import { DiscoverComponent } from './features/profile/discover.component';
+import { NotificationsComponent } from './features/notifications/notifications.component';
+import { ChatComponent } from './features/chat/chat.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },

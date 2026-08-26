@@ -5,7 +5,7 @@ import {
   IntercollegeService, 
   ConfessionRead, 
   StudentAppRead
-} from './intercollege.service';
+} from './services/intercollege.service';
 
 @Component({
   selector: 'app-feed',

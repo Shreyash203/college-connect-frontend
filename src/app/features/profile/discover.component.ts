@@ -1,8 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ProfileService, ProfileRead } from './profile.service';
-import { ChatService } from './chat.service';
+import { ProfileService, ProfileRead } from './services/profile.service';
+import { ChatService } from '../../core/services/chat.service';
 
 @Component({
   selector: 'app-discover',

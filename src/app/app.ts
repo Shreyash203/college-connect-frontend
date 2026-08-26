@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AuthService } from './auth.service';
-import { CurrentUserService } from './current-user.service';
+import { AuthService } from './core/services/auth.service';
+import { CurrentUserService } from './core/services/current-user.service';
 
 @Component({
   selector: 'app-root',

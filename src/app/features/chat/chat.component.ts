@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, inject, ElementRef, ViewChild, AfterViewC
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ChatService, Conversation, ChatMessage } from '../chat.service';
-import { ProfileService } from '../profile.service';
+import { ChatService, Conversation, ChatMessage } from '../../core/services/chat.service';
+import { ProfileService } from '../profile/services/profile.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -67,7 +67,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadSidebar() {
     this.chatService.getConversations().subscribe({
-      next: (data) => {
+      next: (data: Conversation[]) => {
         this.conversations = data;
         
         // Auto-open conversation if passed via query params
@@ -79,19 +79,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
           }
         }
       },
-      error: (err) => console.error(err)
+      error: (err: any) => console.error(err)
     });
   }
 
   openConversation(conv: Conversation) {
     this.activeConversation = conv;
     this.chatService.getMessages(conv.id).subscribe({
-      next: (data) => {
+      next: (data: ChatMessage[]) => {
         this.messages = data;
         this.shouldScroll = true;
         conv.unread_count = 0;
       },
-      error: (err) => console.error(err)
+      error: (err: any) => console.error(err)
     });
   }
 

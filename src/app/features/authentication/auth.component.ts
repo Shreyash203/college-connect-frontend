@@ -2,8 +2,8 @@ import { Component, inject, OnInit, AfterViewInit, NgZone, signal } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService, RegisterRequest } from './auth.service';
-import { CurrentUserService } from './current-user.service';
+import { AuthService, RegisterRequest } from '../../core/services/auth.service';
+import { CurrentUserService } from '../../core/services/current-user.service';
 
 declare var google: any;
 

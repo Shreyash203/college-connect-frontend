@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MarketplaceService, MarketplaceItem } from './marketplace.service';
-import { ChatService } from './chat.service';
+import { MarketplaceService, MarketplaceItem } from './services/marketplace.service';
+import { ChatService } from '../../core/services/chat.service';
 
 @Component({
   selector: 'app-marketplace',

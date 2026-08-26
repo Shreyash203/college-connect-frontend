@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { API_BASE_URL } from './api.config';
+import { API_BASE_URL } from '../api.config';
 
 export interface ChatMessage {
   id: number;

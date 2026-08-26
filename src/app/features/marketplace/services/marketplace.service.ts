@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { API_BASE_URL } from './api.config';
+import { API_BASE_URL } from '../../../core/api.config';
 
 export interface MarketplaceItem {
   id: number;
