@@ -25,21 +25,13 @@ export class App implements OnInit {
   }
 
   private checkTokenValidity() {
+    // We intentionally do NOT delete the token here if it is expired.
+    // The entire point of the Dual-Token Silent Refresh architecture is to 
+    // leave the expired token in localStorage, let the API call fail with a 401,
+    // and allow our HttpInterceptor to automatically fetch a new token via the HttpOnly cookie.
     const token = localStorage.getItem('auth_token');
-    if (!token) {
-      return;
-    }
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.exp && Date.now() >= payload.exp * 1000) {
-        // Token expired – clear and log out
-        localStorage.removeItem('auth_token');
-        this.currentUser.setLoggedIn(false);
-      }
-    } catch {
-      // If decoding fails, assume token is invalid
-      localStorage.removeItem('auth_token');
-      this.currentUser.setLoggedIn(false);
+    if (token) {
+      this.currentUser.setLoggedIn(true);
     }
   }
 
