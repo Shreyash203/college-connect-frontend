@@ -10,7 +10,6 @@ import { DiscoverComponent } from './features/profile/discover.component';
 import { NotificationsComponent } from './features/notifications/notifications.component';
 import { ChatComponent } from './features/chat/chat.component';
 import { authGuard } from './core/guards/auth.guard';
-import { profileGuard } from './core/guards/profile.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -19,10 +18,10 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
-  { path: 'feed', component: FeedComponent, canActivate: [authGuard, profileGuard] },
+  { path: 'feed', component: FeedComponent, canActivate: [authGuard] },
   // New feature routes - protected
-  { path: 'marketplace', component: MarketplaceComponent, canActivate: [authGuard, profileGuard] },
-  { path: 'discover', component: DiscoverComponent, canActivate: [authGuard, profileGuard] },
-  { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard, profileGuard] },
-  { path: 'messages', component: ChatComponent, canActivate: [authGuard, profileGuard] },
+  { path: 'marketplace', component: MarketplaceComponent, canActivate: [authGuard] },
+  { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
+  { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
+  { path: 'messages', component: ChatComponent, canActivate: [authGuard] },
 ];

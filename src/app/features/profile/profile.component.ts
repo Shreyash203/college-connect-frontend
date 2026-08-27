@@ -124,4 +124,22 @@ export class ProfileComponent implements OnInit {
     this.currentUser.setLoggedIn(false);
     this.router.navigate(['/']);
   }
+
+  deleteAccount() {
+    if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently erase all your data.')) {
+      this.isSaving = true;
+      this.authService.deleteAccount().subscribe({
+        next: () => {
+          this.isSaving = false;
+          localStorage.removeItem('auth_token');
+          this.currentUser.setLoggedIn(false);
+          this.router.navigate(['/']);
+        },
+        error: (err) => {
+          this.isSaving = false;
+          this.message = err.error?.detail || 'Failed to delete account.';
+        }
+      });
+    }
+  }
 }
