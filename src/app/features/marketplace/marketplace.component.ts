@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { Router } from '@angular/router';
 import { MarketplaceService, MarketplaceItem } from './services/marketplace.service';
 import { ChatService } from '../../core/services/chat.service';
+import imageCompression from 'browser-image-compression';
 
 @Component({
   selector: 'app-marketplace',
@@ -80,7 +81,7 @@ export class MarketplaceComponent {
     }
   }
 
-  uploadImage() {
+  async uploadImage() {
     if (!this.selectedFile || this.marketForm.invalid) {
       return;
     }
@@ -93,7 +94,27 @@ export class MarketplaceComponent {
     const title = itemType === 'wanted' ? `[WANTED] ${rawTitle}` : rawTitle;
     const desc = this.marketForm.value.description || '';
     
-    this.marketplaceService.createItem(title, desc, this.selectedFile).subscribe({
+    let fileToUpload = this.selectedFile;
+    
+    try {
+      const options = {
+        maxSizeMB: 1.0, // High quality for launch
+        maxWidthOrHeight: 1920, // Full HD resolution
+        useWebWorker: true,
+        initialQuality: 0.9
+      };
+      const compressedBlob = await imageCompression(this.selectedFile, options);
+      // Convert Blob back to File
+      fileToUpload = new File([compressedBlob], this.selectedFile.name, {
+        type: compressedBlob.type,
+        lastModified: Date.now()
+      });
+      console.log(`Original: ${(this.selectedFile.size/1024/1024).toFixed(2)} MB, Compressed: ${(fileToUpload.size/1024/1024).toFixed(2)} MB`);
+    } catch (error) {
+      console.error('Image compression failed. Uploading original.', error);
+    }
+    
+    this.marketplaceService.createItem(title, desc, fileToUpload).subscribe({
       next: (item) => {
         this.items.unshift(item);
         this.marketForm.reset({ item_type: 'selling' });

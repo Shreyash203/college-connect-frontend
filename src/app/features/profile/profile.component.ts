@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ProfileService, ProfileCreate } from './services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { CurrentUserService } from '../../core/services/current-user.service';
+import imageCompression from 'browser-image-compression';
 
 @Component({
   selector: 'app-profile',
@@ -72,12 +73,32 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  saveProfile() {
+  async saveProfile() {
     if (this.profileForm.invalid) return;
     this.isSaving = true;
     
     if (this.selectedFile) {
-      this.profileService.uploadProfileImage(this.selectedFile).subscribe({
+      let fileToUpload = this.selectedFile;
+      
+      try {
+        const options = {
+          maxSizeMB: 1.0, // High quality for launch
+          maxWidthOrHeight: 1920, // Full HD resolution
+          useWebWorker: true,
+          initialQuality: 0.9
+        };
+        const compressedBlob = await imageCompression(this.selectedFile, options);
+        // Convert Blob back to File
+        fileToUpload = new File([compressedBlob], this.selectedFile.name, {
+          type: compressedBlob.type,
+          lastModified: Date.now()
+        });
+        console.log(`Original: ${(this.selectedFile.size/1024/1024).toFixed(2)} MB, Compressed: ${(fileToUpload.size/1024/1024).toFixed(2)} MB`);
+      } catch (error) {
+        console.error('Image compression failed. Uploading original.', error);
+      }
+
+      this.profileService.uploadProfileImage(fileToUpload).subscribe({
         next: (resp) => {
           this.submitProfile(resp.url);
         },
