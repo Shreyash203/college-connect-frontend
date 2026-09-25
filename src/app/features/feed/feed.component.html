@@ -64,10 +64,36 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ isPostingConfession ? 'Posting...' : 'Post' }}
+              {{ isPostingConfession ? 'Posting...' : (confessionScope === 'college' ? '🎓 Post to College' : '🌐 Post Globally') }}
             </button>
           </div>
         </form>
+
+        <!-- Scope Toggle Buttons -->
+        <div class="flex items-center gap-2 mb-6 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
+          <button
+            (click)="switchScope('global')"
+            [class.bg-white]="confessionScope === 'global'"
+            [class.dark:bg-slate-900]="confessionScope === 'global'"
+            [class.shadow-sm]="confessionScope === 'global'"
+            [class.text-blue-600]="confessionScope === 'global'"
+            [class.font-bold]="confessionScope === 'global'"
+            [class.text-slate-500]="confessionScope !== 'global'"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all duration-200">
+            🌐 Global
+          </button>
+          <button
+            (click)="switchScope('college')"
+            [class.bg-white]="confessionScope === 'college'"
+            [class.dark:bg-slate-900]="confessionScope === 'college'"
+            [class.shadow-sm]="confessionScope === 'college'"
+            [class.text-blue-600]="confessionScope === 'college'"
+            [class.font-bold]="confessionScope === 'college'"
+            [class.text-slate-500]="confessionScope !== 'college'"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all duration-200">
+            🎓 My College
+          </button>
+        </div>
 
         <!-- Confessions Feed -->
         <!-- Skeleton Loader -->

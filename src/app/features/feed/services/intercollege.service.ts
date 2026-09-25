@@ -7,6 +7,7 @@ export interface ConfessionRead {
   id: number;
   college_domain: string;
   content: string;
+  scope: string;
   created_at: string;
   is_mine: boolean;
   likes_count: number;
@@ -15,6 +16,7 @@ export interface ConfessionRead {
 
 export interface ConfessionCreate {
   content: string;
+  scope: 'global' | 'college';
 }
 
 export interface StudentAppRead {
@@ -52,8 +54,8 @@ export class IntercollegeService {
   private launchpadUrl = `${API_BASE_URL}/launchpad`;
 
   // --- Confessions ---
-  getConfessions(skip: number = 0, limit: number = 20): Observable<ConfessionRead[]> {
-    return this.http.get<ConfessionRead[]>(`${this.confessionsUrl}/?skip=${skip}&limit=${limit}`);
+  getConfessions(skip: number = 0, limit: number = 20, scope: 'global' | 'college' = 'global'): Observable<ConfessionRead[]> {
+    return this.http.get<ConfessionRead[]>(`${this.confessionsUrl}/?skip=${skip}&limit=${limit}&scope=${scope}`);
   }
 
   createConfession(data: ConfessionCreate): Observable<ConfessionRead> {

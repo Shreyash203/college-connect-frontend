@@ -18,6 +18,7 @@ export class FeedComponent implements OnInit {
   private intercollegeService = inject(IntercollegeService);
 
   activeTab: 'confessions' | 'launchpad' = 'confessions';
+  confessionScope: 'global' | 'college' = 'global';
 
   // State
   confessions: ConfessionRead[] = [];
@@ -76,7 +77,7 @@ export class FeedComponent implements OnInit {
 
   loadConfessions(append = false) {
     this.isLoadingConfessions = true;
-    this.intercollegeService.getConfessions(this.confessionsSkip, this.limit).subscribe({
+    this.intercollegeService.getConfessions(this.confessionsSkip, this.limit, this.confessionScope).subscribe({
       next: (data) => {
         const formatted = data.map(c => ({ ...c, created_at: c.created_at.endsWith('Z') ? c.created_at : c.created_at + 'Z' }));
         this.confessions = append ? [...this.confessions, ...formatted] : formatted;
@@ -87,6 +88,14 @@ export class FeedComponent implements OnInit {
         this.isLoadingConfessions = false;
       }
     });
+  }
+
+  switchScope(scope: 'global' | 'college') {
+    if (this.confessionScope === scope) return;
+    this.confessionScope = scope;
+    this.confessionsSkip = 0;
+    this.confessions = [];
+    this.loadConfessions();
   }
   
   loadMoreConfessions() {
@@ -124,12 +133,17 @@ export class FeedComponent implements OnInit {
     if (this.confessionForm.invalid) return;
     this.isPostingConfession = true;
     this.confessionMessage = '';
-    this.intercollegeService.createConfession({ content: this.confessionForm.value.content! }).subscribe({
+    this.intercollegeService.createConfession({ 
+      content: this.confessionForm.value.content!,
+      scope: this.confessionScope
+    }).subscribe({
       next: (res) => {
         let updatedRes = { ...res, created_at: res.created_at.endsWith('Z') ? res.created_at : res.created_at + 'Z' };
         this.confessions.unshift(updatedRes);
         this.confessionForm.reset();
-        this.confessionMessage = 'Confession posted completely anonymously!';
+        this.confessionMessage = this.confessionScope === 'college' 
+          ? 'Posted anonymously to your college only!' 
+          : 'Confession posted anonymously to all campuses!';
         this.confessionMessageType = 'success';
         this.isPostingConfession = false;
         setTimeout(() => this.confessionMessage = '', 4000);
