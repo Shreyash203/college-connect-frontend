@@ -19,13 +19,30 @@ export class NotificationsComponent implements OnInit {
 
   ngOnInit() {
     this.loadNotifications();
+    this.markAllAsRead();
+  }
+
+  markAllAsRead() {
+    this.intercollegeService.markAllAsRead().subscribe({
+      next: () => {
+        // Also update local state so they appear read immediately
+        this.notifications.forEach(n => n.is_read = true);
+      },
+      error: (err) => console.error('Failed to mark all as read:', err)
+    });
   }
 
   loadNotifications(append = false) {
     this.isLoading = true;
     this.intercollegeService.getNotifications(this.notificationsSkip, this.limit).subscribe({
       next: (data) => {
-        this.notifications = append ? [...this.notifications, ...data] : data;
+        // Fix UTC timing issue
+        const formatted = data.map(n => ({ 
+          ...n, 
+          created_at: n.created_at.endsWith('Z') ? n.created_at : n.created_at + 'Z' 
+        }));
+        
+        this.notifications = append ? [...this.notifications, ...formatted] : formatted;
         this.isLoading = false;
       },
       error: (err) => {
@@ -47,6 +64,16 @@ export class NotificationsComponent implements OnInit {
         n.is_read = true;
       },
       error: (err) => console.error(err)
+    });
+  }
+
+  clearAll() {
+    this.intercollegeService.clearAllNotifications().subscribe({
+      next: () => {
+        this.notifications = [];
+        this.notificationsSkip = 0;
+      },
+      error: (err) => console.error('Failed to clear notifications:', err)
     });
   }
 }

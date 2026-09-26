@@ -96,4 +96,16 @@ export class IntercollegeService {
   markNotificationAsRead(id: number): Observable<{message: string}> {
     return this.http.put<{message: string}>(`${API_BASE_URL}/notifications/${id}/read`, {});
   }
+
+  getUnreadCount(): Observable<{unread_count: number}> {
+    return this.http.get<{unread_count: number}>(`${API_BASE_URL}/notifications/unread-count`);
+  }
+
+  markAllAsRead(): Observable<{message: string}> {
+    return this.http.put<{message: string}>(`${API_BASE_URL}/notifications/mark-all-read`, {});
+  }
+
+  clearAllNotifications(): Observable<void> {
+    return this.http.delete<void>(`${API_BASE_URL}/notifications/all`);
+  }
 }
