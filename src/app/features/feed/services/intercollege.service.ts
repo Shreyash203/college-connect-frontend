@@ -41,6 +41,7 @@ export interface StudentAppCreate {
 export interface NotificationRead {
   id: number;
   message: string;
+  link?: string | null;
   is_read: boolean;
   created_at: string;
 }
@@ -56,6 +57,10 @@ export class IntercollegeService {
   // --- Confessions ---
   getConfessions(skip: number = 0, limit: number = 20, scope: 'global' | 'college' = 'global'): Observable<ConfessionRead[]> {
     return this.http.get<ConfessionRead[]>(`${this.confessionsUrl}/?skip=${skip}&limit=${limit}&scope=${scope}`);
+  }
+
+  getConfession(id: number): Observable<ConfessionRead> {
+    return this.http.get<ConfessionRead>(`${this.confessionsUrl}/${id}`);
   }
 
   createConfession(data: ConfessionCreate): Observable<ConfessionRead> {
