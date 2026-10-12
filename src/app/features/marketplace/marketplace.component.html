@@ -77,7 +77,7 @@
       <div *ngIf="!isLoading || items.length > 0">
         <div *ngIf="items.length; else noItems">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let item of items" class="group rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/40 overflow-hidden hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300 flex flex-col">
+          <div *ngFor="let item of items" [id]="'item-' + item.id" [class.ring-2]="highlightedItemId === item.id" [class.ring-blue-500]="highlightedItemId === item.id" class="group rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/40 overflow-hidden hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300 flex flex-col">
             <!-- Image goes at the very top, edge-to-edge -->
             <div class="relative w-full aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <img *ngIf="item.image_url" [src]="item.image_url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />

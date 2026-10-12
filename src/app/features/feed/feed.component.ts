@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { 
   IntercollegeService, 
   ConfessionRead, 
@@ -16,6 +17,11 @@ import {
 })
 export class FeedComponent implements OnInit {
   private intercollegeService = inject(IntercollegeService);
+  private route = inject(ActivatedRoute);
+
+  // Deep link from a notification (?confession=<id>&scope=<global|college>)
+  private pendingConfessionId: number | null = null;
+  highlightedConfessionId: number | null = null;
 
   activeTab: 'confessions' | 'launchpad' = 'confessions';
   confessionScope: 'global' | 'college' = 'global';
@@ -55,6 +61,12 @@ export class FeedComponent implements OnInit {
   }); 
 
   ngOnInit() {
+    const params = this.route.snapshot.queryParamMap;
+    const confessionId = Number(params.get('confession'));
+    if (confessionId > 0) {
+      this.pendingConfessionId = confessionId;
+      if (params.get('scope') === 'college') this.confessionScope = 'college';
+    }
     this.loadConfessions();
     this.loadApps();
   }
@@ -80,14 +92,51 @@ export class FeedComponent implements OnInit {
     this.intercollegeService.getConfessions(this.confessionsSkip, this.limit, this.confessionScope).subscribe({
       next: (data) => {
         const formatted = data.map(c => ({ ...c, created_at: c.created_at.endsWith('Z') ? c.created_at : c.created_at + 'Z' }));
-        this.confessions = append ? [...this.confessions, ...formatted] : formatted;
+        this.confessions = append
+          ? [...this.confessions, ...formatted.filter(f => !this.confessions.some(e => e.id === f.id))]
+          : formatted;
         this.isLoadingConfessions = false;
+        this.focusPendingConfession();
       },
       error: (err) => {
         console.error(err);
         this.isLoadingConfessions = false;
       }
     });
+  }
+
+  /** Scroll to + highlight the confession a notification pointed at. */
+  private focusPendingConfession() {
+    const id = this.pendingConfessionId;
+    if (id === null) return;
+    this.pendingConfessionId = null;
+
+    if (this.confessions.some(c => c.id === id)) {
+      this.highlightConfession(id);
+      return;
+    }
+
+    // Not on the first page: fetch just that one and show it at the top
+    this.intercollegeService.getConfession(id).subscribe({
+      next: (c) => {
+        const formatted = { ...c, created_at: c.created_at.endsWith('Z') ? c.created_at : c.created_at + 'Z' };
+        this.confessions = [formatted, ...this.confessions];
+        this.highlightConfession(id);
+      },
+      error: () => {
+        this.confessionMessage = 'That confession is no longer available (confessions disappear after 48 hours).';
+        this.confessionMessageType = 'error';
+        setTimeout(() => this.confessionMessage = '', 6000);
+      }
+    });
+  }
+
+  private highlightConfession(id: number) {
+    this.highlightedConfessionId = id;
+    setTimeout(() => {
+      document.getElementById('confession-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    setTimeout(() => this.highlightedConfessionId = null, 4000);
   }
 
   switchScope(scope: 'global' | 'college') {

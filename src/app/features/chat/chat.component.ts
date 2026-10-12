@@ -98,13 +98,15 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   sendMessage() {
     if (!this.newMessageText.trim() || !this.activeConversation) return;
     
-    this.chatService.sendMessage(
+    const sent = this.chatService.sendMessage(
       this.activeConversation.id, 
       this.activeConversation.other_user_id, 
       this.newMessageText
     );
     
-    this.newMessageText = '';
+    if (sent) {
+      this.newMessageText = '';
+    }
   }
 
   scrollToBottom(): void {

@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MarketplaceService, MarketplaceItem } from './services/marketplace.service';
 import { ChatService } from '../../core/services/chat.service';
 import imageCompression from 'browser-image-compression';
@@ -17,6 +17,11 @@ export class MarketplaceComponent {
   private marketplaceService = inject(MarketplaceService);
   private chatService = inject(ChatService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  // Deep link from a notification (?item=<id>)
+  private pendingItemId: number | null = null;
+  highlightedItemId: number | null = null;
   selectedFile: File | null = null;
   items: MarketplaceItem[] = [];
   skip = 0;
@@ -36,6 +41,8 @@ export class MarketplaceComponent {
   });
 
   ngOnInit() {
+    const itemId = Number(this.route.snapshot.queryParamMap.get('item'));
+    if (itemId > 0) this.pendingItemId = itemId;
     this.loadItems();
   }
 
@@ -59,14 +66,49 @@ export class MarketplaceComponent {
     this.isLoading = true;
     this.marketplaceService.getItems(this.skip, this.limit).subscribe({
       next: (data) => {
-        this.items = append ? [...this.items, ...data] : data;
+        this.items = append
+          ? [...this.items, ...data.filter(d => !this.items.some(e => e.id === d.id))]
+          : data;
         this.isLoading = false;
+        this.focusPendingItem();
       },
       error: (err) => {
         console.error('Failed to load marketplace items', err);
         this.isLoading = false;
       },
     });
+  }
+
+  /** Scroll to + highlight the listing a notification pointed at. */
+  private focusPendingItem() {
+    const id = this.pendingItemId;
+    if (id === null) return;
+    this.pendingItemId = null;
+
+    if (this.items.some(i => i.id === id)) {
+      this.highlightItem(id);
+      return;
+    }
+
+    // Not on the first page: fetch just that one and show it at the top
+    this.marketplaceService.getItem(id).subscribe({
+      next: (item) => {
+        this.items = [item, ...this.items];
+        this.highlightItem(id);
+      },
+      error: () => {
+        this.errorMessage = 'That listing is no longer available (listings expire after 14 days, or the seller removed it).';
+        setTimeout(() => this.errorMessage = '', 6000);
+      }
+    });
+  }
+
+  private highlightItem(id: number) {
+    this.highlightedItemId = id;
+    setTimeout(() => {
+      document.getElementById('item-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    setTimeout(() => this.highlightedItemId = null, 4000);
   }
 
   loadMoreItems() {

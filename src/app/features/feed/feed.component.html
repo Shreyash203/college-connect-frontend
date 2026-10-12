@@ -110,7 +110,7 @@
 
         <!-- Real Data (Continuous Twitter-like scroll) -->
         <div *ngIf="!isLoadingConfessions || confessions.length > 0" class="flex flex-col gap-4">
-          <div *ngFor="let c of confessions" class="p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 rounded-2xl hover:shadow-md transition-shadow">
+          <div *ngFor="let c of confessions" [id]="'confession-' + c.id" [class.ring-2]="highlightedConfessionId === c.id" [class.ring-blue-500]="highlightedConfessionId === c.id" class="p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-slate-900 rounded-2xl hover:shadow-md transition-shadow">
             <div class="flex items-start space-x-3 mb-3">
               <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-sm border border-white dark:border-slate-800">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>

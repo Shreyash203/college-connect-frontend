@@ -37,6 +37,11 @@ export class ChatService {
   private messageSubject = new BehaviorSubject<ChatMessage | null>(null);
   public newMessage$ = this.messageSubject.asObservable();
 
+  private isIntentionalClose = false;
+  private reconnectTimer: any = null;
+  private reconnectAttempts = 0;
+  private readonly maxReconnectAttempts = 5;
+
   getConversations(): Observable<Conversation[]> {
     return this.http.get<Conversation[]>(`${this.apiUrl}/chat/conversations`);
   }
@@ -50,36 +55,84 @@ export class ChatService {
   }
 
   connect() {
-    if (this.ws) return;
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
     
     const token = localStorage.getItem('auth_token');
     if (!token) return;
 
-    this.ws = new WebSocket(`${this.wsUrl}/ws/chat?token=${token}`);
+    this.isIntentionalClose = false;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
 
-    this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.error) {
-        console.error('Chat WS Error:', data.error);
-        return;
-      }
-      this.messageSubject.next(data as ChatMessage);
+    try {
+      this.ws = new WebSocket(`${this.wsUrl}/ws/chat?token=${token}`);
+    } catch (err) {
+      console.error('Failed to create WebSocket:', err);
+      return;
+    }
+
+    this.ws.onopen = () => {
+      this.reconnectAttempts = 0;
     };
 
-    this.ws.onclose = () => {
+    this.ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.error) {
+          console.error('Chat WS Error:', data.error);
+          return;
+        }
+        this.messageSubject.next(data as ChatMessage);
+      } catch (e) {
+        console.error('Failed to parse WS message:', e);
+      }
+    };
+
+    this.ws.onclose = (event) => {
       this.ws = null;
-      setTimeout(() => this.connect(), 3000);
+
+      // Do NOT reconnect if user navigated away or intentionally disconnected
+      if (this.isIntentionalClose) {
+        return;
+      }
+
+      // If closed due to unauthorized token (code 1008 or 4001), stop retrying
+      if (event.code === 1008 || event.code === 4001) {
+        console.warn('Chat WebSocket closed due to unauthorized token. Stopping reconnect.');
+        return;
+      }
+
+      // Stop retrying if user is logged out
+      if (!localStorage.getItem('auth_token')) {
+        return;
+      }
+
+      // Exponential backoff reconnect with maximum retry limit
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnectAttempts++;
+        const delay = Math.min(3000 * Math.pow(1.5, this.reconnectAttempts - 1), 20000);
+        this.reconnectTimer = setTimeout(() => this.connect(), delay);
+      } else {
+        console.warn('Max chat reconnect attempts reached.');
+      }
+    };
+
+    this.ws.onerror = (err) => {
+      console.warn('Chat WebSocket encounter error:', err);
     };
   }
 
-  sendMessage(conversationId: number, targetUserId: number, content: string) {
+  sendMessage(conversationId: number, targetUserId: number, content: string): boolean {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.error('WebSocket is not open');
-      return;
+      return false;
     }
     
     if (content.length > 1000) {
-      console.warn('Message exceeds 1000 characters. Slicing.');
       content = content.substring(0, 1000);
     }
     
@@ -90,9 +143,16 @@ export class ChatService {
     };
     
     this.ws.send(JSON.stringify(payload));
+    return true;
   }
 
   disconnect() {
+    this.isIntentionalClose = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.reconnectAttempts = 0;
     if (this.ws) {
       this.ws.close();
       this.ws = null;
