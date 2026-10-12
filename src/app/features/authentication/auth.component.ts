@@ -28,7 +28,7 @@ export class AuthComponent implements OnInit, AfterViewInit {
   password = '';
   showPassword = false;
   otp = '';
-  pendingId: number | null = null;
+  pendingId: string | null = null;
   
   message = '';
   messageType: 'success' | 'error' | 'info' = 'info';

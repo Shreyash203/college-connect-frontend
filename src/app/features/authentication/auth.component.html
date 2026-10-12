@@ -59,6 +59,10 @@
       <ng-container *ngIf="step === 'otp'">
         <form (ngSubmit)="verifyOtp()" class="flex flex-col gap-4">
           <p class="text-sm text-slate-600 dark:text-slate-400">We've sent a verification code to <strong>{{ email }}</strong>. Enter it below to complete your registration.</p>
+          <div class="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 p-3 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+            <span class="text-base">📩</span>
+            <span><strong>Tip for college webmail:</strong> If you don't see the email in your Inbox, please check your <strong>Spam / Junk</strong> folder.</span>
+          </div>
           <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Verification Code</label>
           <input type="text" [(ngModel)]="otp" name="otp" required maxlength="6" [disabled]="isProcessing" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none transition focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 dark:disabled:bg-slate-700" />
           <button type="submit" [disabled]="isProcessing" class="mt-2 rounded-2xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400 flex justify-center items-center gap-2">

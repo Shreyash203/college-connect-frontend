@@ -14,17 +14,17 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  pending_id: number;
+  pending_id: string;
   message: string;
 }
 
 export interface VerifyRegistrationRequest {
-  pending_id: number;
+  pending_id: string;
   otp: string;
 }
 
 export interface ResendOtpRequest {
-  pending_id: number;
+  pending_id: string;
 }
 
 export interface ForgotPasswordRequest {
