@@ -3,7 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ChatService, Conversation, ChatMessage } from '../../core/services/chat.service';
-import { ProfileService } from '../profile/services/profile.service';
+import { ProfileService, ProfileRead } from '../profile/services/profile.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -25,11 +25,27 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   conversations: Conversation[] = [];
   activeConversation: Conversation | null = null;
   messages: ChatMessage[] = [];
+  selectedProfileForView: ProfileRead | null = null;
   
   newMessageText = '';
   currentUserId: number | null = null;
   private msgSub: Subscription | null = null;
   private shouldScroll = false;
+
+  viewOtherUserProfile(userId?: number) {
+    const targetId = userId || this.activeConversation?.other_user_id;
+    if (!targetId) return;
+    this.profileService.getProfileById(targetId).subscribe({
+      next: (profile) => {
+        this.selectedProfileForView = profile;
+      },
+      error: (err) => console.error("Could not load profile", err)
+    });
+  }
+
+  closeProfileModal() {
+    this.selectedProfileForView = null;
+  }
 
   ngOnInit() {
     this.profileService.getMyProfile().subscribe({

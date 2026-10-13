@@ -4,8 +4,15 @@ import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { API_BASE_URL } from '../../../core/api.config';
 
+export interface ProfilePrompt {
+  question: string;
+  answer: string;
+}
+
 export interface ProfileCreate {
   image_url?: string;
+  vibe_photos?: string[];
+  prompts?: ProfilePrompt[];
   display_name?: string;
   department?: string;
   year?: string;
@@ -15,6 +22,8 @@ export interface ProfileCreate {
 
 export interface ProfileRead {
   image_url?: string;
+  vibe_photos?: string[];
+  prompts?: ProfilePrompt[];
   id: number;
   user_id: number;
   email?: string;
@@ -48,6 +57,10 @@ export class ProfileService {
 
   getMyProfile(): Observable<ProfileRead> {
     return this.http.get<ProfileRead>(`${this.apiUrl}/profiles/me`);
+  }
+
+  getProfileById(profileId: number): Observable<ProfileRead> {
+    return this.http.get<ProfileRead>(`${this.apiUrl}/profiles/${profileId}`);
   }
 
   uploadProfileImage(file: File): Observable<{url: string}> { 

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ProfileService, ProfileRead } from './services/profile.service';
 import { ChatService } from '../../core/services/chat.service';
 
@@ -15,6 +15,7 @@ export class DiscoverComponent implements OnInit {
   private profileService = inject(ProfileService);
   private chatService = inject(ChatService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   public profiles: ProfileRead[] = [];
   skip = 0;
   limit = 20;
@@ -22,6 +23,58 @@ export class DiscoverComponent implements OnInit {
   selectedCategory: string | null = null;
   categoryTitle: string = '';
   myYear: string = 'Your Batch';
+  selectedProfileForView: ProfileRead | null = null;
+  copiedToast = false;
+
+  openFullProfile(profile: ProfileRead) {
+    this.selectedProfileForView = profile;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { profile: profile.id },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  closeFullProfile() {
+    this.selectedProfileForView = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { profile: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  copyProfileLink(profileId: number, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    const shareUrl = `${window.location.origin}/discover?profile=${profileId}`;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        this.copiedToast = true;
+        setTimeout(() => {
+          this.copiedToast = false;
+        }, 2500);
+      }).catch(() => {
+        this.fallbackCopy(shareUrl);
+      });
+    } else {
+      this.fallbackCopy(shareUrl);
+    }
+  }
+
+  private fallbackCopy(text: string) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    this.copiedToast = true;
+    setTimeout(() => {
+      this.copiedToast = false;
+    }, 2500);
+  }
 
   ngOnInit() {
     this.profileService.getMyProfile().subscribe({
@@ -31,6 +84,29 @@ export class DiscoverComponent implements OnInit {
         }
       },
       error: () => {}
+    });
+
+    // Deep-linking & Browser Back/Forward navigation support
+    this.route.queryParams.subscribe(params => {
+      const profileParam = params['profile'];
+      if (profileParam) {
+        const id = Number(profileParam);
+        const existing = this.profiles.find(p => p.id === id);
+        if (existing) {
+          this.selectedProfileForView = existing;
+        } else {
+          this.profileService.getProfileById(id).subscribe({
+            next: (profile) => {
+              this.selectedProfileForView = profile;
+            },
+            error: () => {
+              this.closeFullProfile();
+            }
+          });
+        }
+      } else {
+        this.selectedProfileForView = null;
+      }
     });
   }
 
