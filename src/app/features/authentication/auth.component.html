@@ -69,7 +69,9 @@
             <span *ngIf="isProcessing" class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
             {{ isProcessing ? 'Verifying...' : 'Verify' }}
           </button>
-          <button type="button" (click)="resendOtp()" class="text-sm text-blue-600 hover:underline">Resend code</button>
+          <button type="button" (click)="resendOtp()" [disabled]="isProcessing || resendCooldownSeconds > 0" class="text-sm text-blue-600 hover:underline disabled:cursor-not-allowed disabled:text-slate-400 disabled:no-underline">
+            {{ resendCooldownSeconds > 0 ? 'Resend code in ' + resendCooldownSeconds + 's' : 'Resend code' }}
+          </button>
         </form>
       </ng-container>
       <div *ngIf="message" [ngClass]="{'bg-red-50 text-red-700': messageType === 'error', 'bg-emerald-50 text-emerald-700 dark:text-emerald-400': messageType === 'success', 'bg-blue-50 text-blue-700 dark:text-blue-400': messageType === 'info'}" class="rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2">

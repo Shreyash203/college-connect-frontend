@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, AfterViewInit, NgZone, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, AfterViewInit, NgZone, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -14,7 +14,7 @@ declare var google: any;
   templateUrl: './auth.component.html',
   styles: []
 })
-export class AuthComponent implements OnInit, AfterViewInit {
+export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -34,6 +34,8 @@ export class AuthComponent implements OnInit, AfterViewInit {
   messageType: 'success' | 'error' | 'info' = 'info';
   isProcessing = false;
   returnUrl = '';
+  resendCooldownSeconds = 0;
+  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
     // If the path is /register, start in register mode
@@ -63,6 +65,10 @@ export class AuthComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.initGoogleBtn();
+  }
+
+  ngOnDestroy() {
+    this.clearResendCooldown();
   }
 
   toggleMode() {
@@ -182,6 +188,7 @@ export class AuthComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.pendingId = res.pending_id;
         this.step = 'otp';
+        this.startResendCooldown();
         this.showMessage(res.message, 'success');
         this.isProcessing = false;
       },
@@ -218,13 +225,37 @@ export class AuthComponent implements OnInit, AfterViewInit {
       this.showMessage('No pending registration found.', 'error');
       return;
     }
+    if (this.isProcessing || this.resendCooldownSeconds > 0) return;
+    this.startResendCooldown();
     this.authService.resendOtp({ pending_id: this.pendingId }).subscribe({
       next: (res) => {
         this.showMessage(res.message, 'success');
       },
       error: (err) => {
+        const retryAfter = Number(err.headers?.get('Retry-After'));
+        if (err.status === 429 && Number.isFinite(retryAfter) && retryAfter > 0) {
+          this.startResendCooldown(retryAfter);
+        }
         this.showMessage(this.extractErrorMessage(err, 'Failed to resend code.'), 'error');
       },
     }); 
+  }
+
+  private startResendCooldown(seconds = 30) {
+    this.clearResendCooldown();
+    this.resendCooldownSeconds = Math.ceil(seconds);
+    this.cooldownInterval = setInterval(() => {
+      this.resendCooldownSeconds = Math.max(0, this.resendCooldownSeconds - 1);
+      if (this.resendCooldownSeconds === 0) {
+        this.clearResendCooldown();
+      }
+    }, 1000);
+  }
+
+  private clearResendCooldown() {
+    if (this.cooldownInterval !== null) {
+      clearInterval(this.cooldownInterval);
+      this.cooldownInterval = null;
+    }
   }
 }
