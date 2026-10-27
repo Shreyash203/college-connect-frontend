@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MarketplaceService, MarketplaceItem } from './services/marketplace.service';
 import { ChatService } from '../../core/services/chat.service';
@@ -9,7 +9,7 @@ import imageCompression from 'browser-image-compression';
 @Component({
   selector: 'app-marketplace',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './marketplace.component.html',
   styles: []
 })
@@ -28,6 +28,12 @@ export class MarketplaceComponent {
   limit = 20;
   isLoading = true;
   isUploading = false;
+  showPostForm = false;
+
+  // Real-time search & category filter
+  searchQuery = '';
+  selectedFilter: 'all' | 'selling' | 'wanted' = 'all';
+  private searchDebounceTimer: any = null;
   
   // Debounce timers to prevent database spamming
   private interestTimeouts: { [key: number]: any } = {};
@@ -39,6 +45,52 @@ export class MarketplaceComponent {
     description: new FormControl('', []),
     item_type: new FormControl<'selling' | 'wanted'>('selling', [Validators.required])
   });
+
+  get filteredItems(): MarketplaceItem[] {
+    return this.items.filter(item => {
+      // 1. Type filter
+      const isWanted = item.title.startsWith('[WANTED]');
+      if (this.selectedFilter === 'selling' && isWanted) return false;
+      if (this.selectedFilter === 'wanted' && !isWanted) return false;
+
+      // 2. Search query filter
+      if (!this.searchQuery || !this.searchQuery.trim()) return true;
+      const q = this.searchQuery.toLowerCase().trim();
+      const cleanTitle = isWanted ? item.title.substring(8).trim().toLowerCase() : item.title.toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      const email = (item.email || '').toLowerCase();
+      return cleanTitle.includes(q) || desc.includes(q) || email.includes(q);
+    });
+  }
+
+  get forSaleCount(): number {
+    return this.items.filter(i => !i.title.startsWith('[WANTED]')).length;
+  }
+
+  get wantedCount(): number {
+    return this.items.filter(i => i.title.startsWith('[WANTED]')).length;
+  }
+
+  setFilter(filter: 'all' | 'selling' | 'wanted') {
+    this.selectedFilter = filter;
+  }
+
+  onSearchChange() {
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+    // Debounce backend query by 350ms to fetch any non-loaded matches from server
+    this.searchDebounceTimer = setTimeout(() => {
+      this.skip = 0;
+      this.loadItems(false);
+    }, 350);
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.skip = 0;
+    this.loadItems(false);
+  }
 
   ngOnInit() {
     const itemId = Number(this.route.snapshot.queryParamMap.get('item'));
@@ -64,7 +116,7 @@ export class MarketplaceComponent {
 
   private loadItems(append = false) {
     this.isLoading = true;
-    this.marketplaceService.getItems(this.skip, this.limit).subscribe({
+    this.marketplaceService.getItems(this.skip, this.limit, this.searchQuery).subscribe({
       next: (data) => {
         this.items = append
           ? [...this.items, ...data.filter(d => !this.items.some(e => e.id === d.id))]
@@ -162,6 +214,7 @@ export class MarketplaceComponent {
         this.marketForm.reset({ item_type: 'selling' });
         this.selectedFile = null;
         this.isUploading = false;
+        this.showPostForm = false;
         this.successMessage = 'Listing created successfully!';
         setTimeout(() => this.successMessage = '', 4000);
       },

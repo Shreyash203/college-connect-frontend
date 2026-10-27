@@ -1,141 +1,260 @@
 <div class="mx-auto max-w-7xl">
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-3xl font-bold tracking-tight">Campus Bazaar</h2>
-      </div>
+  <!-- Top Header with Title and 'Post to Bazaar' Button -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div>
+      <h2 class="text-3xl font-bold tracking-tight">Campus Bazaar</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Buy, sell, or request items within your campus community.</p>
+    </div>
+    <button 
+      type="button"
+      (click)="showPostForm = !showPostForm"
+      class="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition shadow-sm flex items-center gap-2 shrink-0">
+      <svg *ngIf="!showPostForm" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      <svg *ngIf="showPostForm" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      {{ showPostForm ? 'Close' : 'Post an Item' }}
+    </button>
+  </div>
 
-      <!-- Create new marketplace item form (Sleek Desktop version) -->
-      <div class="mb-12 p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/60 max-w-3xl">
-      <div *ngIf="successMessage" class="mb-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
-        {{ successMessage }}
-      </div>
-      <div *ngIf="errorMessage" class="mb-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300">
-        {{ errorMessage }}
-      </div>
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="mb-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="mb-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+    {{ errorMessage }}
+  </div>
 
-      <form [formGroup]="marketForm" (ngSubmit)="uploadImage()" class="flex flex-col gap-4">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Listing Type</label>
-          <div class="flex space-x-3">
-            <button type="button" 
-              (click)="marketForm.patchValue({ item_type: 'selling' })"
-              [class.bg-slate-900]="marketForm.value.item_type === 'selling'"
-              [class.dark:bg-white]="marketForm.value.item_type === 'selling'"
-              [class.text-white]="marketForm.value.item_type === 'selling'"
-              [class.dark:text-slate-900]="marketForm.value.item_type === 'selling'"
-              [class.bg-slate-100]="marketForm.value.item_type !== 'selling'"
-              [class.dark:bg-slate-800]="marketForm.value.item_type !== 'selling'"
-              [class.text-slate-600]="marketForm.value.item_type !== 'selling'"
-              [class.dark:text-slate-400]="marketForm.value.item_type !== 'selling'"
-              class="px-5 py-2 rounded-full text-sm font-semibold transition-colors flex items-center gap-2">
-              For Sale
-            </button>
-            <button type="button" 
-              (click)="marketForm.patchValue({ item_type: 'wanted' })"
-              [class.bg-slate-900]="marketForm.value.item_type === 'wanted'"
-              [class.dark:bg-white]="marketForm.value.item_type === 'wanted'"
-              [class.text-white]="marketForm.value.item_type === 'wanted'"
-              [class.dark:text-slate-900]="marketForm.value.item_type === 'wanted'"
-              [class.bg-slate-100]="marketForm.value.item_type !== 'wanted'"
-              [class.dark:bg-slate-800]="marketForm.value.item_type !== 'wanted'"
-              [class.text-slate-600]="marketForm.value.item_type !== 'wanted'"
-              [class.dark:text-slate-400]="marketForm.value.item_type !== 'wanted'"
-              class="px-5 py-2 rounded-full text-sm font-semibold transition-colors flex items-center gap-2">
-              Request
-            </button>
-          </div>
+  <!-- Real-Time Search & Category Filters (AT THE VERY TOP) -->
+  <div class="mb-8 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+    <!-- Search Bar -->
+    <div class="relative flex-1 max-w-xl">
+      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="onSearchChange()" 
+        placeholder="Search items by title, description, or seller..." 
+        class="w-full pl-11 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 shadow-sm text-sm"
+      />
+      <button 
+        *ngIf="searchQuery" 
+        (click)="clearSearch()" 
+        type="button"
+        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+        title="Clear search">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="flex items-center space-x-2 shrink-0 overflow-x-auto pb-1 sm:pb-0">
+      <button 
+        type="button" 
+        (click)="setFilter('all')" 
+        [class.bg-blue-600]="selectedFilter === 'all'"
+        [class.text-white]="selectedFilter === 'all'"
+        [class.bg-white]="selectedFilter !== 'all'"
+        [class.dark:bg-slate-900]="selectedFilter !== 'all'"
+        [class.text-slate-700]="selectedFilter !== 'all'"
+        [class.dark:text-slate-300]="selectedFilter !== 'all'"
+        class="px-4 py-2 rounded-full text-xs font-semibold border border-slate-200 dark:border-slate-800 transition shadow-sm hover:border-slate-300">
+        All <span class="ml-1 opacity-70">({{ items.length }})</span>
+      </button>
+      <button 
+        type="button" 
+        (click)="setFilter('selling')" 
+        [class.bg-blue-600]="selectedFilter === 'selling'"
+        [class.text-white]="selectedFilter === 'selling'"
+        [class.bg-white]="selectedFilter !== 'selling'"
+        [class.dark:bg-slate-900]="selectedFilter !== 'selling'"
+        [class.text-slate-700]="selectedFilter !== 'selling'"
+        [class.dark:text-slate-300]="selectedFilter !== 'selling'"
+        class="px-4 py-2 rounded-full text-xs font-semibold border border-slate-200 dark:border-slate-800 transition shadow-sm hover:border-slate-300">
+        For Sale <span class="ml-1 opacity-70">({{ forSaleCount }})</span>
+      </button>
+      <button 
+        type="button" 
+        (click)="setFilter('wanted')" 
+        [class.bg-blue-600]="selectedFilter === 'wanted'"
+        [class.text-white]="selectedFilter === 'wanted'"
+        [class.bg-white]="selectedFilter !== 'wanted'"
+        [class.dark:bg-slate-900]="selectedFilter !== 'wanted'"
+        [class.text-slate-700]="selectedFilter !== 'wanted'"
+        [class.dark:text-slate-300]="selectedFilter !== 'wanted'"
+        class="px-4 py-2 rounded-full text-xs font-semibold border border-slate-200 dark:border-slate-800 transition shadow-sm hover:border-slate-300">
+        Requests <span class="ml-1 opacity-70">({{ wantedCount }})</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Create new marketplace item form (Toggled on demand) -->
+  <div *ngIf="showPostForm" class="mb-10 p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/80 max-w-3xl shadow-sm transition-all animate-in fade-in duration-300">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Create a New Listing</h3>
+      <button type="button" (click)="showPostForm = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">✕ Close</button>
+    </div>
+
+    <form [formGroup]="marketForm" (ngSubmit)="uploadImage()" class="flex flex-col gap-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Listing Type</label>
+        <div class="flex space-x-3">
+          <button type="button" 
+            (click)="marketForm.patchValue({ item_type: 'selling' })"
+            [class.bg-slate-900]="marketForm.value.item_type === 'selling'"
+            [class.dark:bg-white]="marketForm.value.item_type === 'selling'"
+            [class.text-white]="marketForm.value.item_type === 'selling'"
+            [class.dark:text-slate-900]="marketForm.value.item_type === 'selling'"
+            [class.bg-slate-100]="marketForm.value.item_type !== 'selling'"
+            [class.dark:bg-slate-800]="marketForm.value.item_type !== 'selling'"
+            [class.text-slate-600]="marketForm.value.item_type !== 'selling'"
+            [class.dark:text-slate-400]="marketForm.value.item_type !== 'selling'"
+            class="px-5 py-2 rounded-full text-sm font-semibold transition-colors flex items-center gap-2">
+            For Sale
+          </button>
+          <button type="button" 
+            (click)="marketForm.patchValue({ item_type: 'wanted' })"
+            [class.bg-slate-900]="marketForm.value.item_type === 'wanted'"
+            [class.dark:bg-white]="marketForm.value.item_type === 'wanted'"
+            [class.text-white]="marketForm.value.item_type === 'wanted'"
+            [class.dark:text-slate-900]="marketForm.value.item_type === 'wanted'"
+            [class.bg-slate-100]="marketForm.value.item_type !== 'wanted'"
+            [class.dark:bg-slate-800]="marketForm.value.item_type !== 'wanted'"
+            [class.text-slate-600]="marketForm.value.item_type !== 'wanted'"
+            [class.dark:text-slate-400]="marketForm.value.item_type !== 'wanted'"
+            class="px-5 py-2 rounded-full text-sm font-semibold transition-colors flex items-center gap-2">
+            Request
+          </button>
         </div>
+      </div>
 
-        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Title</label>
-        <input type="text" formControlName="title" placeholder="e.g. Calculus Textbook, Desk Lamp" required class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none focus:border-blue-500" />
-        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
-        <textarea formControlName="description" placeholder="Include item condition, price, or contact details..." rows="3" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none focus:border-blue-500"></textarea>
-        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Image</label>
-        <input type="file" (change)="onFileSelected($event)" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
-        <button type="submit" [disabled]="marketForm.invalid || !selectedFile || isUploading" class="mt-2 w-full rounded-2xl bg-blue-600 text-white px-4 py-3 font-semibold hover:bg-blue-700 disabled:opacity-50 transition shadow-sm flex justify-center items-center">
-          <svg *ngIf="isUploading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Title</label>
+      <input type="text" formControlName="title" placeholder="e.g. Calculus Textbook, Desk Lamp, Cycle" required class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none focus:border-blue-500" />
+      
+      <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+      <textarea formControlName="description" placeholder="Include item condition, expected price, or contact details..." rows="3" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-4 py-3 outline-none focus:border-blue-500"></textarea>
+      
+      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Image</label>
+      <input type="file" (change)="onFileSelected($event)" class="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
+      
+      <button type="submit" [disabled]="marketForm.invalid || !selectedFile || isUploading" class="mt-2 w-full rounded-2xl bg-blue-600 text-white px-4 py-3 font-semibold hover:bg-blue-700 disabled:opacity-50 transition shadow-sm flex justify-center items-center">
+        <svg *ngIf="isUploading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ isUploading ? 'Creating...' : 'Post to Campus Bazaar' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Skeleton Loader -->
+  <div *ngIf="isLoading && items.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let _ of [1,2,3,4,5,6]" class="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/30 overflow-hidden animate-pulse">
+      <div class="h-48 bg-slate-200 dark:bg-slate-800 w-full"></div>
+      <div class="p-5">
+        <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-1/3 mb-4"></div>
+        <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listings Section -->
+  <div *ngIf="!isLoading || items.length > 0">
+    <div *ngIf="items.length > 0; else noItems">
+      <!-- Search result indicator -->
+      <div *ngIf="searchQuery || selectedFilter !== 'all'" class="mb-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <span>Found <strong>{{ filteredItems.length }}</strong> {{ filteredItems.length === 1 ? 'item' : 'items' }} <span *ngIf="searchQuery">matching "<strong>{{ searchQuery }}</strong>"</span></span>
+        <button (click)="clearSearch(); setFilter('all')" class="text-blue-600 dark:text-blue-400 hover:underline">Reset filters</button>
+      </div>
+
+      <!-- No search results state -->
+      <div *ngIf="filteredItems.length === 0" class="py-16 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/20">
+        <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          {{ isUploading ? 'Creating...' : 'Post to Campus Bazaar' }}
-        </button>
-      </form>
-
-      </div>
-
-      <!-- Skeleton Loader -->
-      <div *ngIf="isLoading && items.length === 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div *ngFor="let _ of [1,2,3,4,5,6]" class="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/30 overflow-hidden animate-pulse">
-          <div class="h-48 bg-slate-200 dark:bg-slate-800 w-full"></div>
-          <div class="p-5">
-            <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-1/3 mb-4"></div>
-            <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
-          </div>
         </div>
+        <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">No matching listings</h3>
+        <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">No items match "<span class="font-medium text-slate-700 dark:text-slate-300">{{ searchQuery }}</span>". Try another search or clear the filter.</p>
+        <button (click)="clearSearch(); setFilter('all')" class="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 transition-colors">
+          Clear Search
+        </button>
       </div>
 
-      <!-- List existing marketplace items -->
-      <div *ngIf="!isLoading || items.length > 0">
-        <div *ngIf="items.length; else noItems">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let item of items" [id]="'item-' + item.id" [class.ring-2]="highlightedItemId === item.id" [class.ring-blue-500]="highlightedItemId === item.id" class="group rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/40 overflow-hidden hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300 flex flex-col">
-            <!-- Image goes at the very top, edge-to-edge -->
-            <div class="relative w-full aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
-              <img *ngIf="item.image_url" [src]="item.image_url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              <div *ngIf="!item.image_url" class="w-full h-full flex items-center justify-center text-slate-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              </div>
-              <span *ngIf="item.title.startsWith('[WANTED]')" class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800 shadow-md uppercase tracking-widest border border-slate-200">
-                REQUEST
-              </span>
-              <span *ngIf="!item.title.startsWith('[WANTED]')" class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-900 text-white shadow-md uppercase tracking-widest border border-slate-800">
-                FOR SALE
-              </span>
+      <!-- Items Grid -->
+      <div *ngIf="filteredItems.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let item of filteredItems" [id]="'item-' + item.id" [class.ring-2]="highlightedItemId === item.id" [class.ring-blue-500]="highlightedItemId === item.id" class="group rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900/40 overflow-hidden hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300 flex flex-col">
+          <!-- Image -->
+          <div class="relative w-full aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <img *ngIf="item.image_url" [src]="item.image_url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <div *ngIf="!item.image_url" class="w-full h-full flex items-center justify-center text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
-            
-            <div class="p-5 flex-grow flex flex-col">
-              <div class="flex items-start justify-between mb-2">
-                <h3 class="text-lg font-bold leading-tight">
-                  {{ item.title.startsWith('[WANTED] ') ? item.title.substring(9) : item.title }}
-                </h3>
-                <button *ngIf="item.is_mine" (click)="deleteItem(item)" title="Delete" class="text-slate-400 hover:text-red-500 transition-colors ml-2 shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            <span *ngIf="item.title.startsWith('[WANTED]')" class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800 shadow-md uppercase tracking-widest border border-slate-200">
+              REQUEST
+            </span>
+            <span *ngIf="!item.title.startsWith('[WANTED]')" class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-900 text-white shadow-md uppercase tracking-widest border border-slate-800">
+              FOR SALE
+            </span>
+          </div>
+          
+          <div class="p-5 flex-grow flex flex-col">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="text-lg font-bold leading-tight">
+                {{ item.title.startsWith('[WANTED] ') ? item.title.substring(9) : item.title }}
+              </h3>
+              <button *ngIf="item.is_mine" (click)="deleteItem(item)" title="Delete" class="text-slate-400 hover:text-red-500 transition-colors ml-2 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </div>
+            <p *ngIf="item.email" class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-3 flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              {{ item.email }}
+            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 mb-4" *ngIf="item.description">{{ item.description }}</p>
+            <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800/60">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Campus Connect</span>
+                
+                <button (click)="toggleInterest(item)" [class.text-yellow-600]="item.has_indicated_interest" [class.dark:text-yellow-400]="item.has_indicated_interest" class="group flex items-center space-x-1 text-slate-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors">
+                  <div class="p-1.5 rounded-full group-hover:bg-yellow-50 dark:group-hover:bg-yellow-900/30 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" [attr.fill]="item.has_indicated_interest ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                  </div>
+                  <span class="text-[13px] font-semibold">{{ item.interest_count || 'Interested' }}</span>
                 </button>
               </div>
-              <p *ngIf="item.email" class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-3 flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                {{ item.email }}
-              </p>
-              <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3 mb-4" *ngIf="item.description">{{ item.description }}</p>
-                <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                  <div class="flex items-center justify-between mb-4">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Campus Connect</span>
-                    
-                    <button (click)="toggleInterest(item)" [class.text-yellow-600]="item.has_indicated_interest" [class.dark:text-yellow-400]="item.has_indicated_interest" class="group flex items-center space-x-1 text-slate-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors">
-                      <div class="p-1.5 rounded-full group-hover:bg-yellow-50 dark:group-hover:bg-yellow-900/30 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" [attr.fill]="item.has_indicated_interest ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
-                      </div>
-                      <span class="text-[13px] font-semibold">{{ item.interest_count || 'Interested' }}</span>
-                    </button>
-                  </div>
-                  <button *ngIf="item.user_id && !item.is_mine" (click)="messageSeller(item.user_id)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl transition-colors text-sm shadow-sm">
-                    Message Seller
-                  </button>
-                </div>
+              <button *ngIf="item.user_id && !item.is_mine" (click)="messageSeller(item.user_id)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl transition-colors text-sm shadow-sm">
+                Message Seller
+              </button>
             </div>
           </div>
         </div>
-        <div *ngIf="items.length > 0 && items.length % limit === 0" class="flex justify-center mt-12">
-          <button (click)="loadMoreItems()" class="px-8 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">Load More</button>
-        </div>
       </div>
-      <ng-template #noItems>
-        <div class="py-20 text-center">
-          <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-          </div>
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Bazaar is empty</h3>
-          <p class="text-slate-500 mt-1">No Campus Bazaar listings yet. Be the first to post!</p>
-        </div>
-      </ng-template>
+      <div *ngIf="items.length > 0 && items.length % limit === 0 && !searchQuery" class="flex justify-center mt-12">
+        <button (click)="loadMoreItems()" class="px-8 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">Load More</button>
       </div>
+    </div>
+
+    <!-- Empty Bazaar State -->
+    <ng-template #noItems>
+      <div class="py-20 text-center">
+        <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Bazaar is empty</h3>
+        <p class="text-slate-500 mt-1">No Campus Bazaar listings yet. Be the first to post!</p>
+        <button (click)="showPostForm = true" class="mt-4 px-6 py-2.5 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">
+          + Post First Item
+        </button>
+      </div>
+    </ng-template>
+  </div>
 </div>

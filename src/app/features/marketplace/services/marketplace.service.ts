@@ -45,8 +45,12 @@ export class MarketplaceService {
     return this.http.get<MarketplaceItem>(`${this.apiUrl}/marketplace/items/${id}`);
   }
 
-  getItems(skip: number = 0, limit: number = 5): Observable<MarketplaceItem[]> {
-    return this.http.get<MarketplaceItem[]>(`${this.apiUrl}/marketplace/items?skip=${skip}&limit=${limit}`);
+  getItems(skip: number = 0, limit: number = 20, q?: string): Observable<MarketplaceItem[]> {
+    const params: Record<string, any> = { skip, limit };
+    if (q && q.trim()) {
+      params['q'] = q.trim();
+    }
+    return this.http.get<MarketplaceItem[]>(`${this.apiUrl}/marketplace/items`, { params });
   }
 
   deleteItem(id: number): Observable<void> {
