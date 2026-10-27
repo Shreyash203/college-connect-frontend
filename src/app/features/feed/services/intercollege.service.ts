@@ -38,6 +38,34 @@ export interface StudentAppCreate {
   app_url?: string;
 }
 
+
+export interface CampusEventRead {
+  id: number;
+  user_id: number;
+  organizer_name?: string;
+  organizer_email?: string;
+  title: string;
+  description: string;
+  event_date: string;
+  venue: string;
+  category: string;
+  scope: 'college' | 'global';
+  college_domain: string;
+  created_at: string;
+  rsvp_count: number;
+  has_rsvped: boolean;
+  is_mine: boolean;
+}
+
+export interface CampusEventCreate {
+  title: string;
+  description: string;
+  event_date: string;
+  venue: string;
+  category: string;
+  scope: 'college' | 'global';
+}
+
 export interface NotificationRead {
   id: number;
   message: string;
@@ -53,6 +81,7 @@ export class IntercollegeService {
   private http = inject(HttpClient);
   private confessionsUrl = `${API_BASE_URL}/confessions`;
   private launchpadUrl = `${API_BASE_URL}/launchpad`;
+  private eventsUrl = `${API_BASE_URL}/events`;
 
   // --- Confessions ---
   getConfessions(skip: number = 0, limit: number = 20, scope: 'global' | 'college' = 'global'): Observable<ConfessionRead[]> {
@@ -78,6 +107,24 @@ export class IntercollegeService {
   // --- Marketplace ---
   indicateMarketplaceInterest(id: number): Observable<{interested: boolean, interest_count: number}> {
     return this.http.post<{interested: boolean, interest_count: number}>(`${API_BASE_URL}/marketplace/items/${id}/interest`, {});
+  }
+
+
+  // --- Campus Events ---
+  getEvents(skip: number = 0, limit: number = 20, scope: 'college' | 'global' = 'college'): Observable<CampusEventRead[]> {
+    return this.http.get<CampusEventRead[]>(`${this.eventsUrl}/?skip=${skip}&limit=${limit}&scope=${scope}`);
+  }
+
+  createEvent(data: CampusEventCreate): Observable<CampusEventRead> {
+    return this.http.post<CampusEventRead>(`${this.eventsUrl}/`, data);
+  }
+
+  toggleEventRsvp(id: number): Observable<{rsvped: boolean, rsvp_count: number}> {
+    return this.http.post<{rsvped: boolean, rsvp_count: number}>(`${this.eventsUrl}/${id}/rsvp`, {});
+  }
+
+  deleteEvent(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.eventsUrl}/${id}`);
   }
 
   // --- Launchpad ---

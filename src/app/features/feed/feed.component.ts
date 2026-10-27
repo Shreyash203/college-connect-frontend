@@ -5,7 +5,9 @@ import { ActivatedRoute } from '@angular/router';
 import { 
   IntercollegeService, 
   ConfessionRead, 
-  StudentAppRead
+  StudentAppRead,
+  CampusEventRead,
+  CampusEventCreate
 } from './services/intercollege.service';
 
 @Component({
@@ -23,7 +25,7 @@ export class FeedComponent implements OnInit {
   private pendingConfessionId: number | null = null;
   highlightedConfessionId: number | null = null;
 
-  activeTab: 'confessions' | 'launchpad' = 'confessions';
+  activeTab: 'confessions' | 'events' | 'launchpad' = 'confessions';
   confessionScope: 'global' | 'college' = 'global';
 
   // State
@@ -49,6 +51,26 @@ export class FeedComponent implements OnInit {
   isPostingConfession = false;
   isPostingApp = false;
 
+  // Campus Events State
+  eventScope: 'college' | 'global' = 'college';
+  events: CampusEventRead[] = [];
+  eventsSkip = 0;
+  isLoadingEvents = false;
+  isPostingEvent = false;
+  showEventForm = false;
+  eventMessage = '';
+  eventMessageType: 'success' | 'error' = 'success';
+  private rsvpTimeouts: { [key: number]: any } = {};
+
+  eventForm = new FormGroup({
+    title: new FormControl('', [Validators.required, Validators.maxLength(255)]),
+    description: new FormControl('', [Validators.required, Validators.maxLength(1500)]),
+    event_date: new FormControl('', [Validators.required]),
+    venue: new FormControl('', [Validators.required, Validators.maxLength(255)]),
+    category: new FormControl('Workshop', [Validators.required]),
+    scope: new FormControl<'college' | 'global'>('college', [Validators.required])
+  });
+
   // Reactive Forms
   confessionForm = new FormGroup({
     content: new FormControl('', [Validators.required, Validators.maxLength(500)])
@@ -69,6 +91,7 @@ export class FeedComponent implements OnInit {
     }
     this.loadConfessions();
     this.loadApps();
+    this.loadEvents();
   }
 
   extractErrorMessage(err: any, fallback: string): string {
@@ -293,4 +316,118 @@ export class FeedComponent implements OnInit {
       });
     }, 500);
   }
+
+  loadEvents(append = false) {
+    this.isLoadingEvents = true;
+    this.intercollegeService.getEvents(this.eventsSkip, this.limit, this.eventScope).subscribe({
+      next: (data) => {
+        this.events = append
+          ? [...this.events, ...data.filter(d => !this.events.some(e => e.id === d.id))]
+          : data;
+        this.isLoadingEvents = false;
+      },
+      error: (err) => {
+        console.error('Failed to load campus events', err);
+        this.isLoadingEvents = false;
+      }
+    });
+  }
+
+  switchEventScope(scope: 'college' | 'global') {
+    this.eventScope = scope;
+    this.eventsSkip = 0;
+    this.loadEvents(false);
+  }
+
+  postEvent() {
+    if (this.eventForm.invalid) {
+      this.eventForm.markAllAsTouched();
+      return;
+    }
+
+    const val = this.eventForm.value;
+    const newEvent: CampusEventCreate = {
+      title: (val.title || '').trim(),
+      description: (val.description || '').trim(),
+      event_date: new Date(val.event_date || '').toISOString(),
+      venue: (val.venue || '').trim(),
+      category: val.category || 'General',
+      scope: val.scope || 'college'
+    };
+
+    this.isPostingEvent = true;
+    this.eventMessage = '';
+    this.intercollegeService.createEvent(newEvent).subscribe({
+      next: (res) => {
+        this.events.unshift(res);
+        this.eventForm.reset({
+          category: 'Workshop',
+          scope: 'college'
+        });
+        this.showEventForm = false;
+        this.isPostingEvent = false;
+        this.eventMessage = 'Event posted successfully! 📅';
+        this.eventMessageType = 'success';
+        setTimeout(() => this.eventMessage = '', 4000);
+      },
+      error: (err) => {
+        this.eventMessage = this.extractErrorMessage(err, 'Failed to post event.');
+        this.eventMessageType = 'error';
+        this.isPostingEvent = false;
+      }
+    });
+  }
+
+  toggleEventRsvp(e: CampusEventRead) {
+    e.has_rsvped = !e.has_rsvped;
+    e.rsvp_count += e.has_rsvped ? 1 : -1;
+
+    if (this.rsvpTimeouts[e.id]) {
+      clearTimeout(this.rsvpTimeouts[e.id]);
+    }
+
+    this.rsvpTimeouts[e.id] = setTimeout(() => {
+      this.intercollegeService.toggleEventRsvp(e.id).subscribe({
+        next: (res) => {
+          e.has_rsvped = res.rsvped;
+          e.rsvp_count = res.rsvp_count;
+          delete this.rsvpTimeouts[e.id];
+        },
+        error: (err) => {
+          e.has_rsvped = !e.has_rsvped;
+          e.rsvp_count += e.has_rsvped ? 1 : -1;
+          delete this.rsvpTimeouts[e.id];
+          console.error('Failed to RSVP', err);
+        }
+      });
+    }, 500);
+  }
+
+  deleteEvent(id: number) {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    this.intercollegeService.deleteEvent(id).subscribe({
+      next: () => {
+        this.events = this.events.filter(item => item.id !== id);
+      },
+      error: (err) => {
+        this.eventMessage = this.extractErrorMessage(err, 'Failed to delete event.');
+        this.eventMessageType = 'error';
+      }
+    });
+  }
+
+  formatEventDate(dateStr: string): { month: string, day: string, time: string, weekday: string } {
+    try {
+      const d = new Date(dateStr);
+      return {
+        month: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+        day: d.getDate().toString().padStart(2, '0'),
+        time: d.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        weekday: d.toLocaleString('en-US', { weekday: 'short' })
+      };
+    } catch {
+      return { month: 'DATE', day: '--', time: '', weekday: '' };
+    }
+  }
+
 }
