@@ -1,0 +1,72 @@
+import { HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest, HttpErrorResponse, HttpBackend, HttpClient } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Observable, catchError, throwError, switchMap, BehaviorSubject, filter, take } from 'rxjs';
+import { CurrentUserService } from '../services/current-user.service';
+import { API_BASE_URL } from '../api.config';
+
+let isRefreshing = false;
+let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+
+export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
+  const token = localStorage.getItem('auth_token');
+  const currentUser = inject(CurrentUserService);
+  
+  // Create a clean HttpClient that bypasses this interceptor to avoid circular dependencies
+  const httpBackend = inject(HttpBackend);
+  const cleanHttp = new HttpClient(httpBackend);
+
+  // Skip attaching token for Azure Blob Storage requests
+  if (req.url.includes('blob.core.windows.net')) {
+    return next(req);
+  }
+
+  const addToken = (request: HttpRequest<any>, t: string | null) => {
+    return t ? request.clone({ setHeaders: { Authorization: `Bearer ${t}` } }) : request;
+  };
+
+  return next(addToken(req, token)).pipe(
+    catchError((err: HttpErrorResponse) => {
+      // Do not attempt token refresh on authentication entrypoints (login, register, forgot-pw, etc.)
+      const isAuthEndpoint = 
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/register') ||
+        req.url.includes('/auth/refresh') ||
+        req.url.includes('/auth/google') ||
+        req.url.includes('/auth/verify-registration') ||
+        req.url.includes('/auth/forgot-password') ||
+        req.url.includes('/auth/reset-password');
+
+      // Only attempt silent refresh for protected APIs when access token has expired
+      if (err.status === 401 && !isAuthEndpoint) {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          refreshTokenSubject.next(null);
+
+          return cleanHttp.post<any>(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true }).pipe(
+            switchMap((res) => {
+              isRefreshing = false;
+              localStorage.setItem('auth_token', res.access_token);
+              refreshTokenSubject.next(res.access_token);
+              return next(addToken(req, res.access_token));
+            }),
+            catchError((refreshErr) => {
+              isRefreshing = false;
+              refreshTokenSubject.next(null);
+              localStorage.removeItem('auth_token');
+              currentUser.setLoggedIn(false);
+              return throwError(() => refreshErr);
+            })
+          );
+        } else {
+          // If a refresh is already in progress, wait for the new access token
+          return refreshTokenSubject.pipe(
+            filter(t => t != null),
+            take(1),
+            switchMap(t => next(addToken(req, t)))
+          );
+        }
+      }
+      return throwError(() => err);
+    })
+  );
+};

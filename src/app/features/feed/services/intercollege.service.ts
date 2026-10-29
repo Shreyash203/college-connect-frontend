@@ -1,0 +1,163 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../../../core/api.config';
+
+export interface ConfessionRead {
+  id: number;
+  college_domain: string;
+  content: string;
+  scope: string;
+  created_at: string;
+  is_mine: boolean;
+  likes_count: number;
+  has_liked: boolean;
+}
+
+export interface ConfessionCreate {
+  content: string;
+  scope: 'global' | 'college';
+}
+
+export interface StudentAppRead {
+  id: number;
+  app_name: string;
+  description: string;
+  app_url?: string;
+  college_domain: string;
+  created_at: string;
+  user_id: number;
+  email?: string;
+  is_mine: boolean;
+  [key: string]: any;
+}
+
+export interface StudentAppCreate {
+  app_name: string;
+  description: string;
+  app_url?: string;
+}
+
+
+export interface CampusEventRead {
+  id: number;
+  user_id: number;
+  organizer_name?: string;
+  organizer_email?: string;
+  title: string;
+  description: string;
+  event_date: string;
+  venue: string;
+  category: string;
+  scope: 'college' | 'global';
+  college_domain: string;
+  created_at: string;
+  rsvp_count: number;
+  has_rsvped: boolean;
+  is_mine: boolean;
+}
+
+export interface CampusEventCreate {
+  title: string;
+  description: string;
+  event_date: string;
+  venue: string;
+  category: string;
+  scope: 'college' | 'global';
+}
+
+export interface NotificationRead {
+  id: number;
+  message: string;
+  link?: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class IntercollegeService {
+  private http = inject(HttpClient);
+  private confessionsUrl = `${API_BASE_URL}/confessions`;
+  private launchpadUrl = `${API_BASE_URL}/launchpad`;
+  private eventsUrl = `${API_BASE_URL}/events`;
+
+  // --- Confessions ---
+  getConfessions(skip: number = 0, limit: number = 20, scope: 'global' | 'college' = 'global'): Observable<ConfessionRead[]> {
+    return this.http.get<ConfessionRead[]>(`${this.confessionsUrl}/?skip=${skip}&limit=${limit}&scope=${scope}`);
+  }
+
+  getConfession(id: number): Observable<ConfessionRead> {
+    return this.http.get<ConfessionRead>(`${this.confessionsUrl}/${id}`);
+  }
+
+  createConfession(data: ConfessionCreate): Observable<ConfessionRead> {
+    return this.http.post<ConfessionRead>(`${this.confessionsUrl}/`, data);
+  }
+
+  deleteConfession(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.confessionsUrl}/${id}`);
+  }
+
+  likeConfession(id: number): Observable<{liked: boolean, likes_count: number}> {
+    return this.http.post<{liked: boolean, likes_count: number}>(`${this.confessionsUrl}/${id}/like`, {});
+  }
+
+  // --- Marketplace ---
+  indicateMarketplaceInterest(id: number): Observable<{interested: boolean, interest_count: number}> {
+    return this.http.post<{interested: boolean, interest_count: number}>(`${API_BASE_URL}/marketplace/items/${id}/interest`, {});
+  }
+
+
+  // --- Campus Events ---
+  getEvents(skip: number = 0, limit: number = 20, scope: 'college' | 'global' = 'college'): Observable<CampusEventRead[]> {
+    return this.http.get<CampusEventRead[]>(`${this.eventsUrl}/?skip=${skip}&limit=${limit}&scope=${scope}`);
+  }
+
+  createEvent(data: CampusEventCreate): Observable<CampusEventRead> {
+    return this.http.post<CampusEventRead>(`${this.eventsUrl}/`, data);
+  }
+
+  toggleEventRsvp(id: number): Observable<{rsvped: boolean, rsvp_count: number}> {
+    return this.http.post<{rsvped: boolean, rsvp_count: number}>(`${this.eventsUrl}/${id}/rsvp`, {});
+  }
+
+  deleteEvent(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.eventsUrl}/${id}`);
+  }
+
+  // --- Launchpad ---
+  getApps(skip: number = 0, limit: number = 20): Observable<StudentAppRead[]> {
+    return this.http.get<StudentAppRead[]>(`${this.launchpadUrl}/?skip=${skip}&limit=${limit}`);
+  }
+
+  createApp(data: StudentAppCreate): Observable<StudentAppRead> {
+    return this.http.post<StudentAppRead>(`${this.launchpadUrl}/`, data);
+  }
+
+  deleteApp(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.launchpadUrl}/${id}`);
+  }
+
+  // --- Notifications ---
+  getNotifications(skip: number = 0, limit: number = 20): Observable<NotificationRead[]> {
+    return this.http.get<NotificationRead[]>(`${API_BASE_URL}/notifications/?skip=${skip}&limit=${limit}`);
+  }
+
+  markNotificationAsRead(id: number): Observable<{message: string}> {
+    return this.http.put<{message: string}>(`${API_BASE_URL}/notifications/${id}/read`, {});
+  }
+
+  getUnreadCount(): Observable<{unread_count: number}> {
+    return this.http.get<{unread_count: number}>(`${API_BASE_URL}/notifications/unread-count`);
+  }
+
+  markAllAsRead(): Observable<{message: string}> {
+    return this.http.put<{message: string}>(`${API_BASE_URL}/notifications/mark-all-read`, {});
+  }
+
+  clearAllNotifications(): Observable<void> {
+    return this.http.delete<void>(`${API_BASE_URL}/notifications/all`);
+  }
+}

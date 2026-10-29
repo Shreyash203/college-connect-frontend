@@ -1,25 +1,67 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home.component';
-import { AuthComponent } from './auth.component';
-import { ProfileComponent } from './profile.component';
-import { FeedComponent } from './feed.component';
-import { ForgotPasswordComponent } from './forgot-password.component';
-import { ResetPasswordComponent } from './reset-password.component';
-import { MarketplaceComponent } from './marketplace.component';
-import { DiscoverComponent } from './discover.component';
-import { NotificationsComponent } from './notifications.component';
-import { authGuard } from './auth.guard';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'register', component: AuthComponent },
-  { path: 'login', component: AuthComponent },
-  { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
-  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
-  { path: 'feed', component: FeedComponent, canActivate: [authGuard] },
+  {
+    path: '',
+    loadComponent: () =>
+      import('./features/home/home.component').then(m => m.HomeComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/authentication/auth.component').then(m => m.AuthComponent),
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/authentication/auth.component').then(m => m.AuthComponent),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./features/authentication/forgot-password.component').then(m => m.ForgotPasswordComponent),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/authentication/reset-password.component').then(m => m.ResetPasswordComponent),
+  },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then(m => m.ProfileComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'feed',
+    loadComponent: () =>
+      import('./features/feed/feed.component').then(m => m.FeedComponent),
+    canActivate: [authGuard],
+  },
   // New feature routes - protected
-  { path: 'marketplace', component: MarketplaceComponent, canActivate: [authGuard] },
-  { path: 'discover', component: DiscoverComponent, canActivate: [authGuard] },
-  { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
+  {
+    path: 'marketplace',
+    loadComponent: () =>
+      import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'discover',
+    loadComponent: () =>
+      import('./features/profile/discover.component').then(m => m.DiscoverComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./features/notifications/notifications.component').then(m => m.NotificationsComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'messages',
+    loadComponent: () =>
+      import('./features/chat/chat.component').then(m => m.ChatComponent),
+    canActivate: [authGuard],
+  },
 ];
