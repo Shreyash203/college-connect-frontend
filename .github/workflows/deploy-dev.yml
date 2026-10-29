@@ -2,7 +2,7 @@ name: Build and Deploy Frontend (dev)
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "**" ]
   workflow_dispatch:
 
 permissions:
