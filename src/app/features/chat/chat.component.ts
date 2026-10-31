@@ -35,7 +35,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   viewOtherUserProfile(userId?: number) {
     const targetId = userId || this.activeConversation?.other_user_id;
     if (!targetId) return;
-    this.profileService.getProfileById(targetId).subscribe({
+    this.profileService.getProfileByUserId(targetId).subscribe({
       next: (profile) => {
         this.selectedProfileForView = profile;
       },
