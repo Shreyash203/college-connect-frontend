@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ElementRef, ViewChild, AfterViewChecked, HostListener } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -20,13 +20,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
 
+  @HostListener('window:native-back', ['$event'])
+  onNativeBack(event: Event) {
+    if (this.selectedProfileForView) { this.closeProfileModal(); event.preventDefault(); }
+    else if (this.activeConversation) { this.activeConversation = null; event.preventDefault(); }
+  }
+
   @ViewChild('scrollMe') private myScrollContainer!: ElementRef;
 
   conversations: Conversation[] = [];
   activeConversation: Conversation | null = null;
   messages: ChatMessage[] = [];
   selectedProfileForView: ProfileRead | null = null;
-  
+
   newMessageText = '';
   currentUserId: number | null = null;
   private msgSub: Subscription | null = null;
@@ -35,7 +41,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   viewOtherUserProfile(userId?: number) {
     const targetId = userId || this.activeConversation?.other_user_id;
     if (!targetId) return;
-    this.profileService.getProfileById(targetId).subscribe({
+    this.profileService.getProfileByUserId(targetId).subscribe({
       next: (profile) => {
         this.selectedProfileForView = profile;
       },
@@ -59,12 +65,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.msgSub = this.chatService.newMessage$.subscribe((msg) => {
       if (!msg) return;
-      
+
       if (this.activeConversation && msg.conversation_id === this.activeConversation.id) {
         this.messages.push(msg);
         this.shouldScroll = true;
       }
-      
+
       this.loadSidebar();
     });
   }
@@ -85,7 +91,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.getConversations().subscribe({
       next: (data: Conversation[]) => {
         this.conversations = data;
-        
+
         // Auto-open conversation if passed via query params
         const autoConvId = this.route.snapshot.queryParamMap.get('conversationId');
         if (autoConvId && !this.activeConversation) {
@@ -113,13 +119,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   sendMessage() {
     if (!this.newMessageText.trim() || !this.activeConversation) return;
-    
+
     const sent = this.chatService.sendMessage(
-      this.activeConversation.id, 
-      this.activeConversation.other_user_id, 
+      this.activeConversation.id,
+      this.activeConversation.other_user_id,
       this.newMessageText
     );
-    
+
     if (sent) {
       this.newMessageText = '';
     }

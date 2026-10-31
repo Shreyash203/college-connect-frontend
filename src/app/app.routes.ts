@@ -41,6 +41,11 @@ export const routes: Routes = [
   },
   // New feature routes - protected
   {
+    path: 'marketplace/:id',
+    loadComponent: () => import('./features/marketplace/item-detail.component').then(m => m.ItemDetailComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'marketplace',
     loadComponent: () =>
       import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent),

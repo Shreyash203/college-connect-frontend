@@ -65,7 +65,11 @@ export class ProfileService {
     return this.http.get<ProfileRead>(`${this.apiUrl}/profiles/${profileId}`);
   }
 
-  uploadProfileImage(file: File): Observable<{url: string}> { 
+  getProfileByUserId(userId: number): Observable<ProfileRead> {
+    return this.http.get<ProfileRead>(`${this.apiUrl}/profiles/by-user/${userId}`);
+  }
+
+  uploadProfileImage(file: File): Observable<{url: string}> {
     if (file.size > MAX_PROFILE_IMAGE_SIZE) {
       return throwError(() => new Error('Profile images must be 10 MB or smaller.'));
     }
@@ -87,4 +91,4 @@ export class ProfileService {
     );
   }
 }
-  
+

@@ -1,3 +1,4 @@
+import { TokenStore } from './token-store.service';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -28,9 +29,10 @@ export interface Conversation {
   providedIn: 'root'
 })
 export class ChatService {
+  private tokens = inject(TokenStore);
   private http = inject(HttpClient);
   private ws: WebSocket | null = null;
-  
+
   private apiUrl = API_BASE_URL;
   private wsUrl = this.apiUrl.replace('http', 'ws').replace('https', 'wss');
 
@@ -58,8 +60,8 @@ export class ChatService {
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
-    
-    const token = localStorage.getItem('auth_token');
+
+    const token = this.tokens.get();
     if (!token) return;
 
     this.isIntentionalClose = false;
@@ -107,7 +109,7 @@ export class ChatService {
       }
 
       // Stop retrying if user is logged out
-      if (!localStorage.getItem('auth_token')) {
+      if (!this.tokens.get()) {
         return;
       }
 
@@ -131,17 +133,17 @@ export class ChatService {
       console.error('WebSocket is not open');
       return false;
     }
-    
+
     if (content.length > 1000) {
       content = content.substring(0, 1000);
     }
-    
+
     const payload = {
       conversation_id: conversationId,
       target_user_id: targetUserId,
       content: content
     };
-    
+
     this.ws.send(JSON.stringify(payload));
     return true;
   }

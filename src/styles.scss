@@ -143,3 +143,32 @@ body {
   background-position: center;
   background-repeat: no-repeat;
 }
+
+/* Shared web/native mobile adaptations. Desktop layouts retain their breakpoints. */
+html { scroll-padding-top: calc(6rem + env(safe-area-inset-top)); }
+body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+.app-shell { min-height: 100dvh; }
+.app-shell > header { padding-top: env(safe-area-inset-top); }
+.mobile-nav { display: none; }
+:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+@media (max-width: 639px) {
+  button, input, select, textarea { min-height: 44px; }
+  input, select, textarea { font-size: max(16px, 1em); }
+  button, a { touch-action: manipulation; }
+  .has-mobile-nav { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+    padding: 4px env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: #fff; border-top: 1px solid #cbd5e1; justify-content: space-around; }
+  .mobile-nav a { display: flex; align-items: center; justify-content: center; min-height: 56px;
+    flex: 1; font-size: 11px; font-weight: 700; color: #64748b; }
+  .mobile-nav a.active { color: #2563eb; background: #eff6ff; border-radius: 12px; }
+  .dark .mobile-nav { background: #0f172a; border-color: #334155; }
+  .dark .mobile-nav a.active { background: #1e293b; color: #93c5fd; }
+  .keyboard-visible .mobile-nav { display: none; }
+  .keyboard-visible .has-mobile-nav { padding-bottom: 0; }
+  .chat-panel { min-height: 280px; height: calc(100dvh - 280px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+  img { max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

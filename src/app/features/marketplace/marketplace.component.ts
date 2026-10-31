@@ -1,15 +1,21 @@
+import { NativeShell } from '../../core/services/native-shell.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DestroyRef, HostListener } from '@angular/core';
+import type { Photo } from '@capacitor/camera';
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { MarketplaceService, MarketplaceItem } from './services/marketplace.service';
 import { ChatService } from '../../core/services/chat.service';
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import imageCompression from 'browser-image-compression';
 
 @Component({
   selector: 'app-marketplace',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './marketplace.component.html',
   styles: []
 })
@@ -22,7 +28,39 @@ export class MarketplaceComponent {
   // Deep link from a notification (?item=<id>)
   private pendingItemId: number | null = null;
   highlightedItemId: number | null = null;
+  private nativeShell = inject(NativeShell);
+  private destroyRef = inject(DestroyRef);
+  @HostListener('window:native-back', ['$event'])
+  closeFormOnBack(event: Event) {
+    if (this.showPostForm) { this.showPostForm = false; event.preventDefault(); }
+  }
+  private async usePhoto(photo: Photo) {
+    if (!photo.webPath) return;
+    const response = await fetch(photo.webPath);
+    if (!response.ok) throw new Error('Cannot read photo');
+    const blob = await response.blob();
+    this.selectFile(new File([blob], `listing-${Date.now()}.${photo.format}`, { type: blob.type }));
+  }
+  native = Capacitor.isNativePlatform();
   selectedFile: File | null = null;
+  async takePhoto() {
+    try {
+      const photo = await Camera.getPhoto({ resultType: CameraResultType.Uri, source: CameraSource.Prompt, quality: 90, saveToGallery: false });
+      await this.usePhoto(photo);
+    } catch (err: any) {
+      if (!/cancel/i.test(err?.message || '')) this.errorMessage = 'Unable to open photos. Check camera/photo permissions or choose a file.';
+    }
+  }
+  private selectFile(file: File) {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+      this.errorMessage = 'Choose a JPEG, PNG, or WebP image up to 10 MB.';
+      return;
+    }
+    this.selectedFile = file;
+    this.errorMessage = '';
+  }
+  retry() { this.loadItems(); }
+
   items: MarketplaceItem[] = [];
   skip = 0;
   limit = 20;
@@ -34,7 +72,7 @@ export class MarketplaceComponent {
   searchQuery = '';
   selectedFilter: 'all' | 'selling' | 'wanted' = 'all';
   private searchDebounceTimer: any = null;
-  
+
   // Debounce timers to prevent database spamming
   private interestTimeouts: { [key: number]: any } = {};
   errorMessage = '';
@@ -93,6 +131,10 @@ export class MarketplaceComponent {
   }
 
   ngOnInit() {
+    this.nativeShell.recoveredPhoto.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(photo => {
+      this.showPostForm = true;
+      void this.usePhoto(photo).catch(() => this.errorMessage = 'Could not restore your photo. Please choose it again.');
+    });
     const itemId = Number(this.route.snapshot.queryParamMap.get('item'));
     if (itemId > 0) this.pendingItemId = itemId;
     this.loadItems();
@@ -115,6 +157,7 @@ export class MarketplaceComponent {
   }
 
   private loadItems(append = false) {
+    this.errorMessage = '';
     this.isLoading = true;
     this.marketplaceService.getItems(this.skip, this.limit, this.searchQuery).subscribe({
       next: (data) => {
@@ -125,7 +168,7 @@ export class MarketplaceComponent {
         this.focusPendingItem();
       },
       error: (err) => {
-        console.error('Failed to load marketplace items', err);
+        this.errorMessage = err.status === 0 ? 'Cannot connect. Check your connection and try again.' : 'Could not load listings. Please try again.';
         this.isLoading = false;
       },
     });
@@ -171,15 +214,15 @@ export class MarketplaceComponent {
   onFileSelected(event: Event) {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files.length) {
-      this.selectedFile = target.files[0];
+      this.selectFile(target.files[0]);
     }
   }
 
   async uploadImage() {
-    if (!this.selectedFile || this.marketForm.invalid) {
+    if (this.isUploading || !this.selectedFile || this.marketForm.invalid) {
       return;
     }
-    
+
     this.isUploading = true;
     this.errorMessage = '';
     this.successMessage = '';
@@ -187,9 +230,9 @@ export class MarketplaceComponent {
     const itemType = this.marketForm.value.item_type || 'selling';
     const title = itemType === 'wanted' ? `[WANTED] ${rawTitle}` : rawTitle;
     const desc = this.marketForm.value.description || '';
-    
+
     let fileToUpload = this.selectedFile;
-    
+
     try {
       const options = {
         maxSizeMB: 1.0, // High quality for launch
@@ -207,7 +250,7 @@ export class MarketplaceComponent {
     } catch (error) {
       console.error('Image compression failed. Uploading original.', error);
     }
-    
+
     this.marketplaceService.createItem(title, desc, fileToUpload).subscribe({
       next: (item) => {
         this.items.unshift(item);
@@ -241,12 +284,12 @@ export class MarketplaceComponent {
     // Optimistic update
     item.has_indicated_interest = !item.has_indicated_interest;
     item.interest_count = (item.interest_count || 0) + (item.has_indicated_interest ? 1 : -1);
-    
+
     // Clear any existing pending request for this specific item
     if (this.interestTimeouts[item.id]) {
       clearTimeout(this.interestTimeouts[item.id]);
     }
-    
+
     // Wait 500ms before sending to database
     this.interestTimeouts[item.id] = setTimeout(() => {
       this.marketplaceService.indicateInterest(item.id).subscribe({

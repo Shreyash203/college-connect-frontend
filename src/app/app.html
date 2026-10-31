@@ -1,4 +1,4 @@
-<main class="app-shell flex flex-col min-h-screen relative overflow-x-hidden" [class.dark]="darkMode">
+<main [class.has-mobile-nav]="isLoggedIn$ | async" class="app-shell flex flex-col min-h-screen relative overflow-x-hidden" [class.dark]="darkMode">
   <!-- Minimalist, full-width glassmorphism header -->
   <header class="sticky top-0 z-50 flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 sm:px-12 border-b shadow-sm backdrop-blur-xl transition-colors duration-300" [ngClass]="darkMode ? 'border-slate-800/60 bg-black/70 text-white' : 'border-slate-200/60 bg-white/70 text-slate-900'">
     <div class="py-4 flex items-center gap-3">
@@ -33,7 +33,7 @@
           Bazaar
         </a>
       </ng-template>
-      
+
       <!-- Right side icons -->
       <div class="flex items-center gap-2 sm:gap-4 ml-auto sm:ml-4 mb-4 sm:mb-0 self-center">
         <a *ngIf="(isLoggedIn$ | async)" routerLink="/notifications" (click)="unreadCount = 0" routerLinkActive="bg-slate-100 dark:bg-slate-800" class="rounded-full border border-slate-200 dark:border-slate-800 p-2 transition-all hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 relative" title="Notifications">
@@ -79,4 +79,12 @@
       </div>
     </div>
   </footer>
+
+  <nav *ngIf="isLoggedIn$ | async" aria-label="Mobile navigation" class="mobile-nav">
+    <a routerLink="/feed" routerLinkActive="active" ariaCurrentWhenActive="page">Feed</a>
+    <a routerLink="/discover" routerLinkActive="active" ariaCurrentWhenActive="page">Discover</a>
+    <a routerLink="/marketplace" routerLinkActive="active" ariaCurrentWhenActive="page">Bazaar</a>
+    <a routerLink="/messages" routerLinkActive="active" ariaCurrentWhenActive="page">Messages</a>
+    <a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">Profile</a>
+  </nav>
 </main>

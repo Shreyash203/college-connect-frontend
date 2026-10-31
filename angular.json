@@ -54,6 +54,9 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "mobile": {
+              "index": "src/index.mobile.html"
             }
           },
           "defaultConfiguration": "production"
@@ -82,13 +85,7 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              },
-              "src/assets"
-            ],
+            "assets": [],
             "styles": [
               "src/styles.scss"
             ]

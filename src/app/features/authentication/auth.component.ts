@@ -1,11 +1,20 @@
+import { TokenStore } from '../../core/services/token-store.service';
+import { Capacitor } from '@capacitor/core';
 import { Component, inject, OnInit, OnDestroy, AfterViewInit, NgZone, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, RegisterRequest } from '../../core/services/auth.service';
 import { CurrentUserService } from '../../core/services/current-user.service';
+import { registerPlugin } from '@capacitor/core';
 
 declare var google: any;
+
+interface GoogleAuthPlugin {
+  signIn(): Promise<{ credential: string }>;
+}
+
+const GoogleAuth = registerPlugin<GoogleAuthPlugin>('GoogleAuth');
 
 @Component({
   selector: 'app-auth',
@@ -15,21 +24,27 @@ declare var google: any;
   styles: []
 })
 export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
+  private tokens = inject(TokenStore);
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private currentUser = inject(CurrentUserService);
   private ngZone = inject(NgZone);
 
+  native = Capacitor.isNativePlatform();
+  androidNative = Capacitor.getPlatform() === 'android';
+  private destroyed = false;
+  private googleTimer?: ReturnType<typeof setTimeout>;
+
   mode: 'login' | 'register' = 'login';
   step: 'form' | 'otp' = 'form';
-  
+
   email = '';
   password = '';
   showPassword = false;
   otp = '';
   pendingId: string | null = null;
-  
+
   message = '';
   messageType: 'success' | 'error' | 'info' = 'info';
   isProcessing = false;
@@ -58,7 +73,7 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
 
-    if (localStorage.getItem('auth_token')) {
+    if (this.tokens.get()) {
       this.router.navigateByUrl(this.returnUrl || '/profile');
     }
   }
@@ -69,13 +84,15 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.clearResendCooldown();
+    this.destroyed = true;
+    clearTimeout(this.googleTimer);
   }
 
   toggleMode() {
     this.mode = this.mode === 'login' ? 'register' : 'login';
     this.step = 'form';
     this.message = '';
-    
+
     // Re-render google button to update text
     setTimeout(() => {
         this.initGoogleBtn();
@@ -83,6 +100,7 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initGoogleBtn() {
+    if (this.native || this.destroyed) return;
     if (typeof google !== 'undefined' && google.accounts?.id) {
       google.accounts.id.initialize({
         client_id: '774747436427-57ign6kn9qt9tat4ipq7cnb04hio3rmn.apps.googleusercontent.com',
@@ -101,7 +119,7 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
         });
       }
     } else {
-      setTimeout(() => this.initGoogleBtn(), 400);
+      this.googleTimer = setTimeout(() => this.initGoogleBtn(), 400);
     }
   }
 
@@ -111,8 +129,8 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
       this.message = '';
       this.isProcessing = true;
       this.authService.loginWithGoogle(response.credential).subscribe({
-        next: (res) => {
-          localStorage.setItem('auth_token', res.access_token);
+        next: async (res) => {
+          if (!(await this.saveSession(res.access_token))) return;
           this.currentUser.setLoggedIn(true);
           this.isProcessing = false;
           this.router.navigateByUrl(this.returnUrl || '/profile');
@@ -123,6 +141,30 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
         }
       });
     });
+  }
+
+  async signInWithGoogleNative() {
+    if (this.isProcessing) return;
+    this.message = '';
+    this.isProcessing = true;
+    try {
+      const { credential } = await GoogleAuth.signIn();
+      if (!credential) throw new Error('Google did not return an ID token.');
+      this.handleGoogleCredentialResponse({ credential });
+    } catch (error: any) {
+      this.showMessage(this.extractErrorMessage(error, 'Google sign-in was cancelled or could not start.'), 'error');
+      this.isProcessing = false;
+    }
+  }
+
+  private async saveSession(token: string): Promise<boolean> {
+    try { await this.tokens.set(token); return true; }
+    catch {
+      this.authService.logout();
+      this.isProcessing = false;
+      this.showMessage('Cannot securely save your session. Please unlock your device and try again.', 'error');
+      return false;
+    }
   }
 
   extractErrorMessage(err: any, fallback: string): string {
@@ -140,7 +182,7 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
     if (err.message) return err.message;
     return fallback;
   }
-  
+
   showMessage(msg: string, type: 'success' | 'error' | 'info') {
     this.message = msg;
     this.messageType = type;
@@ -164,8 +206,8 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
   private executeLogin() {
     this.isProcessing = true;
     this.authService.login(this.email.trim(), this.password).subscribe({
-      next: (result) => {
-        localStorage.setItem('auth_token', result.access_token);
+      next: async (result) => {
+        if (!(await this.saveSession(result.access_token))) return;
         this.currentUser.setLoggedIn(true);
         this.isProcessing = false;
         this.router.navigateByUrl(this.returnUrl || '/profile');
@@ -185,7 +227,7 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.isProcessing = true;
     this.authService.register(request).subscribe({
-      next: (res) => {
+      next: async (res) => {
         this.pendingId = res.pending_id;
         this.step = 'otp';
         this.startResendCooldown();
@@ -206,8 +248,8 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     this.isProcessing = true;
     this.authService.verifyRegistration({ pending_id: this.pendingId, otp: this.otp }).subscribe({
-      next: (res) => {
-        localStorage.setItem('auth_token', res.access_token);
+      next: async (res) => {
+        if (!(await this.saveSession(res.access_token))) return;
         this.currentUser.setLoggedIn(true);
         this.showMessage('Registration successful!', 'success');
         this.isProcessing = false;
@@ -228,7 +270,7 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.isProcessing || this.resendCooldownSeconds > 0) return;
     this.startResendCooldown();
     this.authService.resendOtp({ pending_id: this.pendingId }).subscribe({
-      next: (res) => {
+      next: async (res) => {
         this.showMessage(res.message, 'success');
       },
       error: (err) => {
@@ -238,7 +280,7 @@ export class AuthComponent implements OnInit, OnDestroy, AfterViewInit {
         }
         this.showMessage(this.extractErrorMessage(err, 'Failed to resend code.'), 'error');
       },
-    }); 
+    });
   }
 
   private startResendCooldown(seconds = 30) {

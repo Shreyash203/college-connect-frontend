@@ -1,3 +1,6 @@
+import { ChatService } from './chat.service';
+import { CurrentUserService } from './current-user.service';
+import { TokenStore } from './token-store.service';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -39,6 +42,9 @@ export interface ResetPasswordRequest {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private tokens = inject(TokenStore);
+  private chat = inject(ChatService);
+  private currentUser = inject(CurrentUserService);
   private http = inject(HttpClient);
   private readonly apiUrl = API_BASE_URL;
 
@@ -83,11 +89,13 @@ export class AuthService {
   }
 
   logout() {
+    this.chat.disconnect();
+    this.currentUser.setLoggedIn(false);
     this.http.post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true }).subscribe({
       next: () => console.log('Logged out of backend'),
       error: (err) => console.error('Logout error', err)
     });
-    localStorage.removeItem('auth_token');
+    void this.tokens.clear().catch(() => console.error('Unable to clear secure session'));
   }
 
   deleteAccount(): Observable<{ message: string }> {

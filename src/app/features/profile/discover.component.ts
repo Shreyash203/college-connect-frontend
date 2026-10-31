@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -19,6 +20,7 @@ export class DiscoverComponent implements OnInit {
   public profiles: ProfileRead[] = [];
   skip = 0;
   limit = 20;
+  errorMessage = '';
   isLoading = false;
   selectedCategory: string | null = null;
   categoryTitle: string = '';
@@ -48,7 +50,7 @@ export class DiscoverComponent implements OnInit {
     if (event) {
       event.stopPropagation();
     }
-    const shareUrl = `${window.location.origin}/discover?profile=${profileId}`;
+    const shareUrl = `${Capacitor.isNativePlatform() ? 'https://college-connect.azurecontainerapps.io' : window.location.origin}/discover?profile=${profileId}`;
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(shareUrl).then(() => {
         this.copiedToast = true;
@@ -126,7 +128,8 @@ export class DiscoverComponent implements OnInit {
 
   loadProfiles(append = false) {
     if (!this.selectedCategory) return;
-    
+
+    this.errorMessage = "";
     this.isLoading = true;
     this.profileService.getProfiles(this.skip, this.limit, this.selectedCategory).subscribe({
       next: (data) => {
@@ -134,6 +137,7 @@ export class DiscoverComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
+        this.errorMessage = 'Cannot load profiles. Check your connection and try again.';
         if (!append) this.profiles = [];
         this.isLoading = false;
       },

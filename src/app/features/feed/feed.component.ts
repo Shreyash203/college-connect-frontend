@@ -2,9 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { 
-  IntercollegeService, 
-  ConfessionRead, 
+import {
+  IntercollegeService,
+  ConfessionRead,
   StudentAppRead,
   CampusEventRead,
   CampusEventCreate
@@ -25,19 +25,21 @@ export class FeedComponent implements OnInit {
   private pendingConfessionId: number | null = null;
   highlightedConfessionId: number | null = null;
 
+  loadError = '';
+  retryFeed() { this.loadError = ''; this.loadConfessions(); this.loadApps(); this.loadEvents(); }
   activeTab: 'confessions' | 'events' | 'launchpad' = 'confessions';
   confessionScope: 'global' | 'college' = 'global';
 
   // State
   confessions: ConfessionRead[] = [];
   studentApps: any[] = [];
-  
+
   // Debounce timers for likes to prevent DB spam
   private likeTimeouts: { [key: number]: any } = {};
-  
+
   confessionMessage = '';
   confessionMessageType: 'success' | 'error' = 'success';
-  
+
   appMessage = '';
   appMessageType: 'success' | 'error' = 'success';
 
@@ -80,7 +82,7 @@ export class FeedComponent implements OnInit {
     app_name: new FormControl('', [Validators.required]),
     description: new FormControl('', [Validators.required]),
     app_url: new FormControl('', [Validators.pattern('^(https?://)?[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)+.*$')])
-  }); 
+  });
 
   ngOnInit() {
     const params = this.route.snapshot.queryParamMap;
@@ -122,7 +124,7 @@ export class FeedComponent implements OnInit {
         this.focusPendingConfession();
       },
       error: (err) => {
-        console.error(err);
+        this.loadError = 'Some posts could not load. Check your connection and try again.';
         this.isLoadingConfessions = false;
       }
     });
@@ -169,7 +171,7 @@ export class FeedComponent implements OnInit {
     this.confessions = [];
     this.loadConfessions();
   }
-  
+
   loadMoreConfessions() {
     this.confessionsSkip += this.limit;
     this.loadConfessions(true);
@@ -190,12 +192,12 @@ export class FeedComponent implements OnInit {
         this.isLoadingApps = false;
       },
       error: (err) => {
-        console.error(err);
+        this.loadError = 'Some posts could not load. Check your connection and try again.';
         this.isLoadingApps = false;
       }
     });
   }
-  
+
   loadMoreApps() {
     this.appsSkip += this.limit;
     this.loadApps(true);
@@ -205,7 +207,7 @@ export class FeedComponent implements OnInit {
     if (this.confessionForm.invalid) return;
     this.isPostingConfession = true;
     this.confessionMessage = '';
-    this.intercollegeService.createConfession({ 
+    this.intercollegeService.createConfession({
       content: this.confessionForm.value.content!,
       scope: this.confessionScope
     }).subscribe({
@@ -213,8 +215,8 @@ export class FeedComponent implements OnInit {
         let updatedRes = { ...res, created_at: res.created_at.endsWith('Z') ? res.created_at : res.created_at + 'Z' };
         this.confessions.unshift(updatedRes);
         this.confessionForm.reset();
-        this.confessionMessage = this.confessionScope === 'college' 
-          ? 'Posted anonymously to your college only!' 
+        this.confessionMessage = this.confessionScope === 'college'
+          ? 'Posted anonymously to your college only!'
           : 'Confession posted anonymously to all campuses!';
         this.confessionMessageType = 'success';
         this.isPostingConfession = false;
@@ -287,16 +289,16 @@ export class FeedComponent implements OnInit {
 
   toggleLike(c: any) {
     if (!c.likes_count) c.likes_count = 0;
-    
+
     // Optimistic UI update instantly for perfect UX
     c.has_liked = !c.has_liked;
     c.likes_count += c.has_liked ? 1 : -1;
-    
+
     // Clear any existing pending request for this specific post
     if (this.likeTimeouts[c.id]) {
       clearTimeout(this.likeTimeouts[c.id]);
     }
-    
+
     // Debounce: Wait 500ms after the user stops clicking before hitting the DB
     this.likeTimeouts[c.id] = setTimeout(() => {
       this.intercollegeService.likeConfession(c.id).subscribe({
@@ -327,7 +329,7 @@ export class FeedComponent implements OnInit {
         this.isLoadingEvents = false;
       },
       error: (err) => {
-        console.error('Failed to load campus events', err);
+        this.loadError = 'Campus events could not load. Check your connection and try again.';
         this.isLoadingEvents = false;
       }
     });

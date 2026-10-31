@@ -1,3 +1,5 @@
+import { TokenStore } from './core/services/token-store.service';
+import { NativeShell } from './core/services/native-shell.service';
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
@@ -15,19 +17,23 @@ import { filter } from 'rxjs/operators';
 })
 export class App implements OnInit, OnDestroy {
   protected title = 'college-connect';
+  private tokens = inject(TokenStore);
   private authService = inject(AuthService);
   private router = inject(Router);
   protected currentUser = inject(CurrentUserService);
   private intercollegeService = inject(IntercollegeService);
   protected isLoggedIn$ = this.currentUser.user$;
   protected darkMode = false;
-  
+
   protected unreadCount = 0;
   private isUserLoggedIn = false;
   private loginSub?: Subscription;
   private routeSub?: Subscription;
 
+  private nativeShell = inject(NativeShell);
+
   ngOnInit() {
+    void this.nativeShell.start().catch(() => console.error('Native shell initialization failed'));
     this.checkTokenValidity();
     this.darkMode = localStorage.getItem('theme') === 'dark';
     this.applyTheme();
@@ -65,11 +71,8 @@ export class App implements OnInit, OnDestroy {
   }
 
   private checkTokenValidity() {
-    // We intentionally do NOT delete the token here if it is expired.
-    // The entire point of the Dual-Token Silent Refresh architecture is to 
-    // leave the expired token in localStorage, let the API call fail with a 401,
-    // and allow our HttpInterceptor to automatically fetch a new token via the HttpOnly cookie.
-    const token = localStorage.getItem('auth_token');
+    // Expired access tokens are retained so the interceptor can use the refresh cookie.
+    const token = this.tokens.get();
     if (token) {
       this.currentUser.setLoggedIn(true);
     }
@@ -89,6 +92,7 @@ export class App implements OnInit, OnDestroy {
 
   private applyTheme() {
     document.documentElement.classList.toggle('dark', this.darkMode);
+    void this.nativeShell.theme(this.darkMode).catch(() => {});
     document.body.classList.toggle('bg-slate-950', this.darkMode);
     document.body.classList.toggle('text-slate-100', this.darkMode);
   }

@@ -1,3 +1,4 @@
+import { TokenStore } from '../../core/services/token-store.service';
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
@@ -41,6 +42,7 @@ export class ProfileComponent implements OnInit {
   prompt2Answer: string = '';
 
   userEmail: string = '';
+  private tokens = inject(TokenStore);
   private profileService = inject(ProfileService);
   private authService = inject(AuthService);
   private currentUser = inject(CurrentUserService);
@@ -260,7 +262,7 @@ export class ProfileComponent implements OnInit {
       this.authService.deleteAccount().subscribe({
         next: () => {
           this.isSaving = false;
-          localStorage.removeItem('auth_token');
+          void this.tokens.clear().catch(() => console.error('Unable to clear secure session'));
           this.currentUser.setLoggedIn(false);
           this.router.navigate(['/']);
         },

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">College Connect</string>
+    <string name="title_activity_main">College Connect</string>
+    <string name="package_name">dev.collegeconnect.preview</string>
+    <string name="custom_url_scheme">dev.collegeconnect.preview</string>
+</resources>
